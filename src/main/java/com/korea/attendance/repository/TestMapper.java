@@ -7,6 +7,6 @@ import org.apache.ibatis.annotations.Select;
 public interface TestMapper {
 
     // 학생 수 조회
-    @Select("SELECT COUNT(*) FROM students")
+    @Select("SELECT COUNT(*) FROM Student")
     long getStudentCount();
 }
