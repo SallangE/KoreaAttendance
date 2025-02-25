@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (userId) => {
     try {
       // ✅ 서버에서 역할(role) 가져오기
-      const response = await fetch(`http://localhost:8080/api/auth/${userId}`);
+      const response = await fetch("https://korea-attendance-96b0a03da0c9.herokuapp.com/api/auth/${userId}");
       if (!response.ok) throw new Error("로그인 실패");
 
       const userData = await response.json();
