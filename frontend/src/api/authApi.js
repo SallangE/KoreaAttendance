@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const login = async (userId) => {
   try {
-    const response = await axios.post("http://localhost:8080/api/auth/login", null, {
+    const response = await axios.post("https://korea-attendance-96b0a03da0c9.herokuapp.com/api/auth/login", null, {
       params: { userId },
     });
 

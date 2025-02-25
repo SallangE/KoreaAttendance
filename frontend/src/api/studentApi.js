@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_URL = "http://localhost:8080/api/students";
+const API_URL = "https://korea-attendance-96b0a03da0c9.herokuapp.com/api/students";
 
 export const registerStudent = async (studentData) => {
   const response = await axios.post(`${API_URL}/register`, studentData);
