@@ -13,9 +13,10 @@ const AuthProvider = ({ children }) => {
     }
   }, []);
 
+
   const login = async (userId, password) => {
     try {
-      const response = await axios.post("http://localhost:8080/api/auth/login", {
+      const response = await axios.post("https://korea-attendance-96b0a03da0c9.herokuapp.com/api/auth/login", {
         userId,
         password,
       });
