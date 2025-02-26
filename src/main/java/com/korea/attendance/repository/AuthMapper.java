@@ -20,4 +20,8 @@ public interface AuthMapper {
         @Result(column = "role", property = "role") // ✅ role을 명확하게 매핑
     })
     Optional<User> findUserById(String userId);
+    
+ // ✅ 교수자 로그인 시 비밀번호 검증 (단일 조회)
+    @Select("SELECT prof_id AS userId, name, 'professor' AS role, password FROM Professor WHERE prof_id = #{userId}")
+    User findProfessorById(String userId);
 }
