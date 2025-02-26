@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation  } from "react-router-dom";
 import { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";  // ✅ import 확인!
 import Header from "./components/Header";
@@ -30,7 +30,7 @@ function TitleUpdater() {
         document.title = "[고려대학교] 강의실 설정";
         break;
       default:
-        document.title = "[고려대학교] 출결 시스템";
+        document.title = "[고려대학교] 출결관리 시스템";
     }
   }, [location]); // location 변경될 때마다 실행
 
@@ -43,6 +43,7 @@ function App() {
       <Router>
         <TitleUpdater />
         <Header />
+        <main>
         <Routes>
           <Route path="/" element={<ClassroomList />} />
           <Route path="/classroom/:classId" element={<ClassroomDetail />} />
@@ -50,6 +51,7 @@ function App() {
           <Route path="/classroom/:classId/manage-attendance" element={<ManageAttendancePage />} />
           <Route path="/classroom/:classId/settings" element={<ClassSettings />} />
         </Routes>
+        </main>
         <Footer />
       </Router>
     </AuthProvider>
