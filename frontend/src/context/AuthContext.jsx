@@ -25,7 +25,8 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       sessionStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
-      alert("로그인 실패: " + error.message);
+      console.error("로그인 중 에러 발생:", error);
+      alert("등록된 학번이 없습니다. 관리자에게 문의하세요.(2024010085@korea.ac.kr)");
     }
   };
 
