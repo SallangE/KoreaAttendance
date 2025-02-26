@@ -18,4 +18,13 @@ public class AuthService {
     public Optional<User> findUserById(String userId) {
         return authMapper.findUserById(userId);
     }
+    
+    // ✅ 교수자 로그인 (비밀번호 검증)
+    public User loginProfessor(String userId, String password) {
+        User user = authMapper.findProfessorById(userId);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        return null; // 비밀번호 틀림
+    }
 }
