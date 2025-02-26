@@ -1,22 +1,29 @@
-/* header css 부분 */
 /* ✅ 헤더 스타일 */
 header {
     background-color: #7C0019; /* 배경색 */
-    padding: 15px 20px; /* 여백 조정 */
+    padding: 15px 40px; /* ✅ 좌우 여백 조정 (기존 20px → 40px) */
     display: flex;
-    justify-content: space-between; /* 좌측 정렬 및 우측 버튼 정렬 */
+    justify-content: space-between; /* 좌측 입력창 & 우측 로고 정렬 */
     align-items: center;
     color: white; /* 글씨 색상 */
     font-size: 16px;
 }
 
 /* ✅ 로그인 입력 필드 스타일 */
+header form {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* ✅ 입력창과 버튼 간격 */
+    margin-left: 20px; /* ✅ 왼쪽 여백 추가 */
+}
+
 header input {
-    padding: 8px;
+    padding: 10px;
     font-size: 14px;
     border-radius: 5px;
     border: 1px solid #ccc;
     margin-right: 8px; /* 버튼과 간격 */
+    width: 180px; /* ✅ 입력창 크기 조정 */
 }
 
 /* ✅ 버튼 스타일 */
@@ -41,4 +48,10 @@ header div {
     display: flex;
     align-items: center;
     gap: 10px; /* 아이디, 역할, 버튼 간격 */
+}
+
+/* ✅ 고려대학교 로고 스타일 */
+header .logo {
+    height: 40px; /* ✅ 로고 크기 조정 */
+    margin-right: 20px; /* ✅ 오른쪽 여백 추가 */
 }
