@@ -3,14 +3,16 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../styles/Header.css"; // ✅ CSS 추가
 import koreaLogo from "../assets/koreaLogo.png"; // ✅ 고려대학교 로고 이미지 가져오기
+import PasswordModal from "../components/PasswordModal"; // ✅ 비밀번호 입력 모달 추가
 
 const Header = () => {
   const { user, login, logout } = useAuth();
   const [userId, setUserId] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
-    e.preventDefault(); // ✅ 기본 동작(새로고침) 방지
+    e.preventDefault();
     if (userId) {
       login(userId);
     } else {
@@ -25,26 +27,30 @@ const Header = () => {
 
   return (
     <header>
-      {/* ✅ 왼쪽: 로그인 폼 또는 유저 정보 */}
       {user ? (
-        <div>
-          <span>환영합니다, {user.userId}님! ({user.role})</span>
-          <button onClick={handleLogout}>로그아웃</button>
+        <div className="user-info"> {/* ✅ flex 적용된 컨테이너 */}
+          <span className="user-message">환영합니다, {user.userId}님! ({user.role})</span>
+          <button className="logout-btn" onClick={handleLogout}>로그아웃</button>
         </div>
       ) : (
-        <form onSubmit={handleLogin}> {/* ✅ form 태그 사용 (엔터 가능) */}
+        <form onSubmit={handleLogin}>
           <input
             type="text"
             placeholder="아이디"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
           />
-          <button type="submit">로그인</button> {/* ✅ type="submit" 추가 */}
+          <button type="submit">로그인</button>
+          <button type="button" className="professor-login-btn" onClick={() => setShowModal(true)}>
+            교수자 로그인
+          </button>
         </form>
       )}
-
-      {/* ✅ 오른쪽: 고려대학교 로고 */}
+      {/* ✅ 고려대학교 로고 */}
       <img src={koreaLogo} alt="고려대학교 로고" className="logo" />
+
+      {/* ✅ 교수자 로그인 모달 */}
+      <PasswordModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </header>
   );
 };
