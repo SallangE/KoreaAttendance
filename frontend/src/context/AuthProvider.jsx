@@ -21,7 +21,7 @@ const AuthProvider = ({ children }) => {
       setUser(userData);
       sessionStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
-      console.error("📌 로그인 실패:", error.response?.data || error.message);
+      console.error("📌 학생 로그인 실패:", error.response?.data || error.message);
       alert("등록된 학번이 없습니다. 관리자에게 문의하세요.(2024010085@korea.ac.kr)");
     }
   };
@@ -44,7 +44,7 @@ const AuthProvider = ({ children }) => {
   };
 
   // ✅ 로그인 함수 (학생/교수 구분)
-  const login = (userId, password) => {
+  const login = (userId, password = null) => {
     if (password) {
       loginProfessor(userId, password); // 교수자 로그인
     } else {
