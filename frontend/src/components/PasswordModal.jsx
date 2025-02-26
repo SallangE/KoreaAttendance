@@ -22,27 +22,29 @@ const PasswordModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
-        <h2>교수자 로그인</h2>
+    <div className="modal-content">
+        <div className="modal-title">교수자 로그인</div> {/* ✅ 제목을 박스 안에 넣음 */}
         <form onSubmit={handleLogin}>
-          <input
+        <div className="modal-inputs"> {/* ✅ 인풋을 감싸는 컨테이너 */}
+            <input
             type="text"
             placeholder="교수자 아이디"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
-          />
-          <input
+            />
+            <input
             type="password"
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-          />
-          <div className="modal-buttons">
+            />
+        </div>
+        <div className="modal-buttons"> {/* ✅ 버튼을 가로 정렬 */}
             <button type="submit">로그인</button>
             <button type="button" onClick={onClose}>취소</button>
-          </div>
+        </div>
         </form>
-      </div>
+    </div>
     </div>
   );
 };
