@@ -11,7 +11,7 @@ import com.korea.attendance.model.User;
 
 @Mapper
 public interface AuthMapper {
-   @Select("SELECT student_id AS userId, name, 'student' AS role FROM Student WHERE student_id = #{userId}")
+   @Select("SELECT student_id AS userId, name, 'student' AS role FROM Student WHERE student_id = #{userId} LIMIT 1")
 	@Results({
 	    @Result(column = "userId", property = "userId"),
 	    @Result(column = "name", property = "name"),
