@@ -21,7 +21,10 @@ const ClassroomList = () => {
   if (!user) {
     return (
       <div className="login-container">
-        <p className="login-message">먼저 로그인이 필요합니다.</p>
+        <p className="login-message">
+        먼저 로그인이 필요합니다.<br /><br />
+        <span style={{ color: "gray", fontSize: "0.9rem" }}>로그인 아이디는 학번입니다.</span>
+      </p>
       </div>
     );
   }
