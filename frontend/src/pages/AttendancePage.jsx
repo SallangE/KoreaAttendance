@@ -71,10 +71,10 @@ const getStateLabel = () => {
 
   return (
     <div className="classroom-container"> {/* ✅ 메인 컨테이너 적용 */}
-      <h2 className="classroom-title">출석 하기</h2> {/* ✅ 제목 스타일 적용 */}
-  
       <div className="button-group"> {/* ✅ 버튼 그룹 스타일 적용 */}
-        <button onClick={handleCheckIn}>출석 등록</button>
+      <button className="button-checkin" onClick={handleCheckIn}>
+        출석 등록
+      </button>
       </div>
   
             {message && (
