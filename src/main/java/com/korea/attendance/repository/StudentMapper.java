@@ -25,20 +25,24 @@ public interface StudentMapper {
 
     // ✅ 특정 강의실에 속한 모든 학생 조회 (SELECT)
     @Select("""
-        SELECT student_id, university, department, name, email, class_id, remarks
-        FROM Student
-        WHERE class_id = #{classId}
-    """)
-    @Results(id = "StudentResultMap", value = {
-        @Result(column = "student_id", property = "studentId"),
-        @Result(column = "university", property = "university"),
-        @Result(column = "department", property = "department"),
-        @Result(column = "name", property = "name"),
-        @Result(column = "email", property = "email"),
-        @Result(column = "class_id", property = "classId"),
-        @Result(column = "remarks", property = "remarks") // ✅ 비고 컬럼 추가
-    })
-    List<Student> findStudentsByClass(@Param("classId") int classId);
+    SELECT student_id, university, department, name, email, class_id, remarks
+    FROM Student
+    WHERE class_id = #{classId}
+    ORDER BY 
+        university ASC,   -- ✅ 단과대학 오름차순
+        department ASC,    -- ✅ 학과 오름차순
+        student_id ASC     -- ✅ 학번 오름차순
+""")
+@Results(id = "StudentResultMap", value = {
+    @Result(column = "student_id", property = "studentId"),
+    @Result(column = "university", property = "university"),
+    @Result(column = "department", property = "department"),
+    @Result(column = "name", property = "name"),
+    @Result(column = "email", property = "email"),
+    @Result(column = "class_id", property = "classId"),
+    @Result(column = "remarks", property = "remarks") // ✅ 비고 컬럼 추가
+})
+List<Student> findStudentsByClass(@Param("classId") int classId);
 
     // ✅ 학생 정보 업데이트 (UPDATE)
     @Update("""
