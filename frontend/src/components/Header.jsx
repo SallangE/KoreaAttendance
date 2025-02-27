@@ -36,7 +36,7 @@ const Header = () => {
         <form onSubmit={handleLogin}>
           <input
             type="text"
-            placeholder="아이디"
+            placeholder="학번"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
           />
