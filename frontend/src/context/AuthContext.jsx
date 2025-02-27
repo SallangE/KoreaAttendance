@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       console.log("✅ 학생 로그인 성공:", userData);
     } catch (error) {
       console.error("📌 학생 로그인 실패:", error.response?.data || error.message);
-      alert("등록된 학번이 없습니다. 관리자에게 문의하세요.");
+      alert("등록된 학번이 없습니다. 학번을 확인해주세요. 지속적인 문제 발생 시 관리자에게 문의하세요.(2024010085@korea.ac.kr)");
     }
   };
 
