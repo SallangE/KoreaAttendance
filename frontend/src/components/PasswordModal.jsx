@@ -43,13 +43,13 @@ const PasswordModal = ({ isOpen, onClose }) => {
               type="text"
               placeholder="교수자 아이디"
               value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              onChange={(e) => setUserId(e.target.value.toLowerCase().trim())} // ✅ 소문자로 변환 및 공백 제거
             />
             <input
               type="password"
               placeholder="비밀번호"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value.toLowerCase().trim())}
             />
           </div>
           <div className="modal-buttons">
