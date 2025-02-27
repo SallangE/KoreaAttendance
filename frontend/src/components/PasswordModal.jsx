@@ -34,6 +34,7 @@ const PasswordModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
+  <div className="password-modal"> 
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-title">교수자 로그인</div>
@@ -59,6 +60,7 @@ const PasswordModal = ({ isOpen, onClose }) => {
         </form>
       </div>
     </div>
+  </div>
   );
 };
 
