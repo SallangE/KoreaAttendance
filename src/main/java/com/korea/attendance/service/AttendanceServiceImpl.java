@@ -1,5 +1,8 @@
 package com.korea.attendance.service;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,15 +11,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.korea.attendance.model.Attendance;
+import com.korea.attendance.model.ClassSettings;
 import com.korea.attendance.repository.AttendanceMapper;
+import com.korea.attendance.repository.ClassMapper;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceMapper attendanceMapper;
+    private final ClassMapper classMapper;
 
-    public AttendanceServiceImpl(AttendanceMapper attendanceMapper) {
+    public AttendanceServiceImpl(AttendanceMapper attendanceMapper, ClassMapper classMapper) {
         this.attendanceMapper = attendanceMapper;
+        this.classMapper = classMapper;
     }
 
     // ✅ 특정 날짜 출석 데이터 조회
@@ -70,16 +77,30 @@ public class AttendanceServiceImpl implements AttendanceService {
     public Map<String, Object> studentCheckIn(Attendance request) {
         Map<String, Object> response = new HashMap<>();
 
-        // ✅ DB에서 출석 가능 시간 확인
-        String availability = attendanceMapper.checkAttendanceAvailability(request.getClassId());
+        // ✅ 현재 KST 시간 가져오기
+        ZoneId KST = ZoneId.of("Asia/Seoul");
+        LocalTime currentTime = LocalTime.now(KST);
+        System.out.println("✅ 현재 KST 시간: " + currentTime);
 
-        // ✅ 출석 가능 시간이 아닐 경우
-        if ("early".equals(availability)) {
+        // ✅ 기존의 DB에서 출석 가능 여부를 확인하는 부분을 제거하고, 직접 시간 비교
+        ClassSettings classSettings = classMapper.getClassSettings(request.getClassId()); // 기존 DB 조회 로직 유지
+        if (classSettings == null) {
+            response.put("message", "❌ 출석 가능 시간 정보를 찾을 수 없습니다.");
+            response.put("state", "none");
+            return response;
+        }
+        
+        // ✅ 출석 가능 시간 가져오기
+        LocalTime presentStart = LocalTime.parse(classSettings.getPresentStart(), DateTimeFormatter.ofPattern("HH:mm:ss"));
+        LocalTime lateEnd = LocalTime.parse(classSettings.getLateEnd(), DateTimeFormatter.ofPattern("HH:mm:ss"));
+
+        // ✅ 출석 가능 여부 확인 (이전에는 DB에서 했던 부분을 백엔드에서 직접 판단)
+        if (currentTime.isBefore(presentStart)) {
             response.put("message", "❌ 아직 출석 가능한 시간이 아닙니다.");
             response.put("state", "none");
             return response;
         } 
-        if ("late".equals(availability)) {
+        if (currentTime.isAfter(lateEnd)) {
             response.put("message", "❌ 수업이 종료된 이후에는 출석할 수 없습니다.");
             response.put("state", "none");
             return response;
