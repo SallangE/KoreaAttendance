@@ -37,8 +37,11 @@ public interface AttendanceMapper {
 		        #{classId}, 
 		        #{date}, 
 		        CASE 
-		            WHEN TIME(NOW()) BETWEEN c.present_start AND c.present_end THEN 'present'
-		            WHEN TIME(NOW()) BETWEEN c.present_end AND c.late_end THEN 'late'
+		            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) 
+					     BETWEEN c.present_start AND c.present_end THEN 'present'
+					WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) 
+     BETWEEN c.present_end AND c.late_end THEN 'late'
+
 		            ELSE 'absent' 
 		        END,
 		        DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'),
@@ -58,49 +61,45 @@ public interface AttendanceMapper {
 
 
     @Select("""
-    SELECT 
-        COALESCE(a.attendance_id, 0) AS attendance_id, 
-        s.student_id AS student_id, 
-        s.name AS name, 
-        s.university AS university,   
-        s.department AS department,   
-        s.class_id AS class_id, 
-        c.class_name AS class_name, 
-        COALESCE(a.date, #{date}) AS date, 
-        COALESCE(a.state, 'absent') AS state, 
-        COALESCE(a.reason, '미등록') AS reason, 
-        COALESCE(s.remarks, '') AS remarks,  
-        COALESCE(a.created_at, NULL) AS created_at, 
-        COALESCE(a.updated_at, NULL) AS updated_at
-    FROM Student s
-    LEFT JOIN Attendance a 
-        ON s.student_id = a.student_id 
-        AND a.class_id = #{classId} 
-        AND a.date = #{date}
-    LEFT JOIN Class c 
-        ON s.class_id = c.class_id
-    WHERE s.class_id = #{classId}
-    ORDER BY 
-        s.university ASC,   -- ✅ 단과대학 오름차순
-        s.department ASC,   -- ✅ 학과 오름차순
-        s.student_id ASC    -- ✅ 학번 오름차순
-""")
-@Results(id = "AttendanceResultMap", value = {
-    @Result(column = "attendance_id", property = "attendanceId"),
-    @Result(column = "student_id", property = "studentId"),
-    @Result(column = "name", property = "name"),
-    @Result(column = "university", property = "university"),
-    @Result(column = "department", property = "department"),
-    @Result(column = "class_id", property = "classId"),
-    @Result(column = "class_name", property = "className"),
-    @Result(column = "date", property = "date"),
-    @Result(column = "state", property = "state"),
-    @Result(column = "reason", property = "reason"),
-    @Result(column = "remarks", property = "remarks"),
-    @Result(column = "created_at", property = "createdAt"),
-    @Result(column = "updated_at", property = "updatedAt")
-})
-List<Attendance> findAttendanceByClassAndDate(@Param("classId") int classId, @Param("date") String date);
+    	    SELECT 
+    	        COALESCE(a.attendance_id, 0) AS attendance_id, 
+    	        s.student_id AS student_id, 
+    	        s.name AS name, 
+    	        s.university AS university,   
+    	        s.department AS department,   
+    	        s.class_id AS class_id, 
+    	        c.class_name AS class_name, 
+    	        COALESCE(a.date, #{date}) AS date, 
+    	        COALESCE(a.state, 'absent') AS state, 
+    	        COALESCE(a.reason, '미등록') AS reason, 
+    	        COALESCE(s.remarks, '') AS remarks,  
+    	        COALESCE(a.created_at, NULL) AS created_at, 
+    	        COALESCE(a.updated_at, NULL) AS updated_at
+    	    FROM Student s
+    	    LEFT JOIN Attendance a 
+    	        ON s.student_id = a.student_id 
+    	        AND a.class_id = #{classId} 
+    	        AND a.date = #{date}
+    	    LEFT JOIN Class c 
+    	        ON s.class_id = c.class_id
+    	    WHERE s.class_id = #{classId}
+    	""")
+    	@Results(id = "AttendanceResultMap", value = {
+    	    @Result(column = "attendance_id", property = "attendanceId"),
+    	    @Result(column = "student_id", property = "studentId"),
+    	    @Result(column = "name", property = "name"),
+    	    @Result(column = "university", property = "university"),
+    	    @Result(column = "department", property = "department"),
+    	    @Result(column = "class_id", property = "classId"),
+    	    @Result(column = "class_name", property = "className"),
+    	    @Result(column = "date", property = "date"),
+    	    @Result(column = "state", property = "state"),
+    	    @Result(column = "reason", property = "reason"),
+    	    @Result(column = "remarks", property = "remarks"), // ✅ Student 테이블에서 remarks 가져옴 (읽기 전용)
+    	    @Result(column = "created_at", property = "createdAt"),
+    	    @Result(column = "updated_at", property = "updatedAt")
+    	})
+    	List<Attendance> findAttendanceByClassAndDate(@Param("classId") int classId, @Param("date") String date);
 
 	@Insert("""
 		    INSERT INTO Attendance (student_id, class_id, date, state, created_at, updated_at)
