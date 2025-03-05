@@ -23,7 +23,8 @@ const AttendancePage = () => {
     // 현재 KST 시간을 구하기 위해 UTC 시간에 9시간을 더함
   const now = new Date();
   const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  const date = kstTime.toISOString().split("T")[0]; // KST 기준 오늘 날짜
+  const date = kstTime.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\. /g, "-").replace(/\./g, "");
+
 
   const studentId = user.userId; // 로그인된 학생 ID
 
