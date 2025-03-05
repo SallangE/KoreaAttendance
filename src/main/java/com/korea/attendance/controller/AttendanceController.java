@@ -35,9 +35,17 @@ public class AttendanceController {
  // ✅ 학생이 직접 출석하는 API
     @PostMapping("/check-in")
     public ResponseEntity<Map<String, Object>> checkIn(@RequestBody Attendance request) {
+        System.out.println("📅 서버에서 받은 출석 요청 데이터: " + request);
+
+        // ✅ 서버가 받은 date 값이 올바른지 확인
+        System.out.println("📌 받은 student_id: " + request.getStudentId());
+        System.out.println("📌 받은 class_id: " + request.getClassId());
+        System.out.println("📌 받은 date: " + request.getDate());
+
         Map<String, Object> response = attendanceService.studentCheckIn(request);
         return ResponseEntity.ok(response);
     }
+
 
  // ✅ 출석 상태(state) 변경
     @PutMapping("/{attendanceId}/state")
