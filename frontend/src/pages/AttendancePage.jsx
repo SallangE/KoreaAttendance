@@ -20,33 +20,37 @@ const AttendancePage = () => {
       return;
     }
   
-    const date = new Date().toISOString().split("T")[0]; // 오늘 날짜
-    const studentId = user.userId; // 로그인된 학생 ID
-  
-    try {
-      const response = await studentCheckIn(studentId, Number(classId), date);
-  
-      console.log("✅ API 응답 데이터:", response.data); // ✅ 응답 확인
-  
-      if (response.data) {
-        const { message, state } = response.data; // ✅ 메시지와 상태 가져오기
-        setState(state);
-        setMessage(`${message} 📌 출석 상태: `);
-      } else {
-        setMessage("✅ 출석이 정상적으로 처리되었습니다.");
-      }
-    } catch (error) {
-      console.error("출석 요청 실패:", error);
-  
-      if (error.response && typeof error.response.data === "object") {
-        const { message, state } = error.response.data;
-        setState(state);
-        setMessage(`${message} 📌 출석 상태: `);
-      } else {
-        setMessage(error.response?.data || "⚠️ 서버와 통신 중 오류가 발생했습니다.");
-      }
+    // 현재 KST 시간을 구하기 위해 UTC 시간에 9시간을 더함
+  const now = new Date();
+  const kstTime = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const date = kstTime.toISOString().split("T")[0]; // KST 기준 오늘 날짜
+
+  const studentId = user.userId; // 로그인된 학생 ID
+
+  try {
+    const response = await studentCheckIn(studentId, Number(classId), date);
+
+    console.log("✅ API 응답 데이터:", response.data);
+
+    if (response.data) {
+      const { message, state } = response.data;
+      setState(state);
+      setMessage(`${message} 📌 출석 상태: `);
+    } else {
+      setMessage("✅ 출석이 정상적으로 처리되었습니다.");
     }
-  };
+  } catch (error) {
+    console.error("출석 요청 실패:", error);
+
+    if (error.response && typeof error.response.data === "object") {
+      const { message, state } = error.response.data;
+      setState(state);
+      setMessage(`${message} 📌 출석 상태: `);
+    } else {
+      setMessage(error.response?.data || "⚠️ 서버와 통신 중 오류가 발생했습니다.");
+    }
+  }
+};
   
   // ✅ 출석 상태를 한글로 변환하는 함수
 const getStateLabel = () => {
