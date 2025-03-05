@@ -71,8 +71,9 @@ public interface ClassMapper {
     """)
     void updateClassSettings(ClassSettings settings);
 
-	@Select("SELECT present_start, present_end, late_end FROM class_settings WHERE class_id = #{classId}")
+	@Select("SELECT present_start, present_end, late_end FROM Class WHERE class_id = #{classId}")
 	ClassSettings getClassSettings(@Param("classId") int classId);
 	}
+
 
 
