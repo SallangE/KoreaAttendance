@@ -37,11 +37,8 @@ public interface AttendanceMapper {
 		        #{classId}, 
 		        #{date}, 
 		        CASE 
-		            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) 
-					     BETWEEN c.present_start AND c.present_end THEN 'present'
-					WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) 
-     BETWEEN c.present_end AND c.late_end THEN 'late'
-
+		            WHEN TIME(NOW()) BETWEEN c.present_start AND c.present_end THEN 'present'
+		            WHEN TIME(NOW()) BETWEEN c.present_end AND c.late_end THEN 'late'
 		            ELSE 'absent' 
 		        END,
 		        DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'),
