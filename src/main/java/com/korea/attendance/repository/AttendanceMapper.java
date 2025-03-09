@@ -137,17 +137,19 @@ public interface AttendanceMapper {
     """)
     int checkDuplicateAttendance(@Param("studentId") String studentId, @Param("classId") int classId, @Param("date") String date);
 
- // ✅ 출석 기록 조회
-    @Select("""
-    	    SELECT attendance_id, student_id, class_id, date, state, created_at, updated_at
-    	    FROM Attendance 
-    	    WHERE student_id = #{studentId} 
-    	      AND class_id = #{classId} 
-    	      AND date = #{date}
-    	""")
-    	Attendance getAttendanceByStudentAndDate(
-    	    @Param("studentId") String studentId, 
-    	    @Param("classId") int classId, 
-    	    @Param("date") String date
-    	);
+@Select("""
+    SELECT a.attendance_id, a.student_id, a.class_id, a.date, a.state, a.created_at, a.updated_at 
+    FROM Attendance a
+    JOIN Student s ON a.student_id = s.student_id
+    WHERE a.student_id = #{studentId} 
+      AND a.class_id = #{classId} 
+      AND a.date = #{date}
+    ORDER BY s.university ASC, s.department ASC, a.student_id ASC
+""")
+Attendance getAttendanceByStudentAndDate(
+    @Param("studentId") String studentId, 
+    @Param("classId") int classId, 
+    @Param("date") String date
+);
+
 }
