@@ -21,6 +21,10 @@ const ManageAttendancePage = () => {
   const [newReason, setNewReason] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
+  // ✅ 기존에 선택한 날짜 가져오기 (없으면 오늘 날짜)
+  const storedDate = localStorage.getItem("selectedDate");
+  const initialDate = storedDate ? new Date(storedDate) : new Date();
+
   // ✅ 컬럼 리스트 (사용자가 보는 화면과 동일한 순서)
   const [columns, setColumns] = useState([
     { id: "university", label: "단과 대학" },
@@ -41,6 +45,7 @@ const ManageAttendancePage = () => {
     return localDate.toISOString().split("T")[0];
   };
 
+  // ✅ 출석 데이터 새로고침 (선택한 날짜 기준)
   const reloadAttendanceData = async () => {
     setIsLoading(true);
     try {
@@ -54,9 +59,16 @@ const ManageAttendancePage = () => {
     }
   };
 
-  useEffect(() => {
-    reloadAttendanceData();
-  }, [selectedDate, classId]);
+ // ✅ 날짜 변경 시 로컬 스토리지에도 저장
+ const handleDateChange = (date) => {
+  setSelectedDate(date);
+  localStorage.setItem("selectedDate", date.toISOString()); // ✅ 저장
+};
+
+useEffect(() => {
+  reloadAttendanceData();
+}, [selectedDate, classId]);
+
 
   // ✅ 컬럼 정렬 기능 추가
   const handleSort = (key) => {
@@ -96,8 +108,8 @@ const ManageAttendancePage = () => {
         // ✅ 새로운 출석 데이터 추가
         await addAttendance(studentId, classId, formattedDate, newState);
   
-        // ✅ 새로운 출석이 추가되면 강제 새로고침 (F5)
-        window.location.reload();
+        // ✅ 새로고침 없이 최신 데이터 반영
+      await reloadAttendanceData(); 
       } else {
         // ✅ 기존 출석 데이터 업데이트
         await updateAttendanceState(attendanceId, newState);
@@ -231,7 +243,7 @@ const ManageAttendancePage = () => {
     <div className="container">
       <h2 className="title-bar">출석 관리</h2>
       <Calendar 
-        onChange={setSelectedDate} 
+        onChange={handleDateChange} 
         value={selectedDate}
         locale="ko-KR"  // ✅ 한국어 로케일 적용
         calendarType="gregory"  // ✅ 일요일부터 시작하도록 강제 설정
@@ -246,6 +258,7 @@ const ManageAttendancePage = () => {
           }
         }} 
       />
+      <button onClick={reloadAttendanceData}>출석 데이터 새로고침</button>
       <button onClick={handleDownloadExcel}>엑셀 다운로드</button>
       <Link to="/">
         <button>메인으로 돌아가기</button>
