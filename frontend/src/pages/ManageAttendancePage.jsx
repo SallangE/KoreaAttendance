@@ -14,7 +14,7 @@ import "../styles.css";
 
 const ManageAttendancePage = () => {
   const { classId } = useParams();
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [attendanceData, setAttendanceData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingReasonId, setEditingReasonId] = useState(null);
