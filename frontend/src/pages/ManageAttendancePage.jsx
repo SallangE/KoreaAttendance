@@ -40,9 +40,11 @@ const ManageAttendancePage = () => {
   ]);
 
   const getKSTDate = (date) => {
-    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-    const kst = new Date(utc + (9 * 60 * 60 * 1000)); // KST 보정
-    return kst.toISOString().split('T')[0]; // YYYY-MM-DD
+    // date 자체가 이미 로컬 Date 객체이기 때문에 UTC 변환 불필요
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');  // 0부터 시작
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
   
   // ✅ 출석 데이터 새로고침 (선택한 날짜 기준)
