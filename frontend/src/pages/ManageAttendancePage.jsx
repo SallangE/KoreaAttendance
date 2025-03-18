@@ -23,8 +23,11 @@ const ManageAttendancePage = () => {
 
 
   // ✅ 기존에 선택한 날짜 가져오기 (없으면 오늘 날짜)
-  const storedDate = localStorage.getItem("selectedDate");
-  const initialDate = storedDate ? new Date(storedDate) : new Date();
+  useEffect(() => {
+    const storedDate = localStorage.getItem("selectedDate");
+    const initialDate = storedDate ? new Date(storedDate + "T00:00:00") : new Date();
+    setSelectedDate(initialDate);
+  }, []);
 
   // ✅ 컬럼 리스트 (사용자가 보는 화면과 동일한 순서)
   const [columns, setColumns] = useState([
@@ -53,6 +56,7 @@ const ManageAttendancePage = () => {
     setIsLoading(true);
     try {
       const formattedDate = getKSTDate(selectedDate);
+      console.log("✅ 서버로 보내는 formattedDate:", formattedDate);  // 핵심 로그
       const updatedData = await fetchAttendanceByDate(classId, formattedDate);
       setAttendanceData(updatedData);
     } catch (error) {
@@ -63,19 +67,15 @@ const ManageAttendancePage = () => {
   };
 
   const handleDateChange = (date) => {
-    // 한국 시간(KST)로 변환해서 저장 (중요!)
-    const kstTimestamp = date.getTime() + (9 * 60 * 60 * 1000);  // KST 보정
-    const kstDate = new Date(kstTimestamp);
-  
-    // YYYY-MM-DD로 잘라서 저장 (toISOString() 쓰지마!)
-    const year = kstDate.getFullYear();
-    const month = String(kstDate.getMonth() + 1).padStart(2, '0');
-    const day = String(kstDate.getDate()).padStart(2, '0');
+    console.log("✅ 캘린더에서 선택된 date 객체:", date);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     const formattedDate = `${year}-${month}-${day}`;
+    console.log("✅ 저장하는 날짜 (YYYY-MM-DD):", formattedDate);
   
-    // 상태 저장
-    setSelectedDate(kstDate);
-    localStorage.setItem("selectedDate", formattedDate);
+    setSelectedDate(new Date(year, date.getMonth(), date.getDate())); // 시간 고정
+    localStorage.setItem("selectedDate", formattedDate);  // ISO 금지
   };
   
 
