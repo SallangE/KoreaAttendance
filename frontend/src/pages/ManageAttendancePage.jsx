@@ -63,8 +63,10 @@ const ManageAttendancePage = () => {
 
  // ✅ 날짜 변경 시 로컬 스토리지에도 저장
  const handleDateChange = (date) => {
-  setSelectedDate(date);
-  localStorage.setItem("selectedDate", date.toISOString()); // ✅ 저장
+  // 캘린더에서 받은 값을 localDate로 변환
+  const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  setSelectedDate(localDate);
+  localStorage.setItem("selectedDate", localDate.toISOString());
 };
 
 useEffect(() => {
