@@ -61,14 +61,15 @@ const ManageAttendancePage = () => {
     }
   };
 
- // ✅ 날짜 변경 시 캘린더가 utc기준이 아닌 한국시간으로 계산하도록
- const handleDateChange = (date) => {
-  const kstOffset = 9 * 60 * 60 * 1000;
-  const kstDate = new Date(date.getTime() + kstOffset);
-  const localDate = new Date(kstDate.getFullYear(), kstDate.getMonth(), kstDate.getDate());
-  setSelectedDate(localDate);
-  localStorage.setItem("selectedDate", localDate.toISOString());
-};
+  const handleDateChange = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    setSelectedDate(new Date(year, date.getMonth(), date.getDate())); // 날짜 고정
+    localStorage.setItem("selectedDate", formattedDate);  // ✅ YYYY-MM-DD로 저장
+  };
+  
 
 useEffect(() => {
   reloadAttendanceData();
