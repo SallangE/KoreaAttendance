@@ -14,7 +14,7 @@ import "../styles.css";
 
 const ManageAttendancePage = () => {
   const { classId } = useParams();
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingReasonId, setEditingReasonId] = useState(null);
@@ -25,9 +25,19 @@ const ManageAttendancePage = () => {
   // ✅ 기존에 선택한 날짜 가져오기 (없으면 오늘 날짜)
   useEffect(() => {
     const storedDate = localStorage.getItem("selectedDate");
-    const initialDate = storedDate ? new Date(storedDate + "T00:00:00") : new Date();
-    setSelectedDate(initialDate);
+    if (storedDate) {
+      setSelectedDate(new Date(storedDate + "T00:00:00"));
+    } else {
+      setSelectedDate(new Date());
+    }
   }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      console.log("✅ 최종적으로 호출하는 날짜:", selectedDate);
+      reloadAttendanceData();
+    }
+  }, [selectedDate, classId]);
 
   // ✅ 컬럼 리스트 (사용자가 보는 화면과 동일한 순서)
   const [columns, setColumns] = useState([
@@ -78,11 +88,6 @@ const ManageAttendancePage = () => {
     localStorage.setItem("selectedDate", formattedDate);  // ISO 금지
   };
   
-
-useEffect(() => {
-  reloadAttendanceData();
-}, [selectedDate, classId]);
-
 
   // ✅ 컬럼 정렬 기능 추가
   const handleSort = (key) => {
