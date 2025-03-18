@@ -31,75 +31,72 @@ public interface AttendanceMapper {
 
  // ✅ 학생 출석 시도 (Attendance 객체를 받아 처리)
 	@Insert("""
-	    INSERT INTO Attendance (student_id, class_id, date, state, created_at, updated_at)
-	    SELECT 
-	        #{studentId}, 
-	        #{classId}, 
-	        #{date}, 
-	        CASE 
-	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_start AND c.present_end THEN 'present'
-	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_end AND c.late_end THEN 'late'
-	            ELSE 'absent' 
-	        END,
-	        DATE_FORMAT(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), '%Y-%m-%d %H:%i:%s'),
-	        NULL
-	    FROM Class c
-	    WHERE c.class_id = #{classId} 
-	    AND NOT EXISTS (
-	        SELECT 1 FROM Attendance 
-	        WHERE student_id = #{studentId} 
-	        AND class_id = #{classId} 
-	        AND date = #{date}
-	    )
-	""")
-	@Options(useGeneratedKeys = true, keyProperty = "attendanceId")
-	void studentCheckIn(Attendance attendance);
+		    INSERT INTO Attendance (student_id, class_id, date, state, created_at, updated_at)
+		    SELECT 
+		        #{studentId}, 
+		        #{classId}, 
+		        #{date}, 
+		        CASE 
+		            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_start AND c.present_end THEN 'present'
+		            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_end AND c.late_end THEN 'late'
+		            ELSE 'absent' 
+		        END,
+		        DATE_FORMAT(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), '%Y-%m-%d %H:%i:%s'),
+		        NULL
+		    FROM Class c
+		    WHERE c.class_id = #{classId} 
+		    AND NOT EXISTS (
+		        SELECT 1 FROM Attendance 
+		        WHERE student_id = #{studentId} 
+		        AND class_id = #{classId} 
+		        AND date = #{date}
+		    )
+		""")
+		@Options(useGeneratedKeys = true, keyProperty = "attendanceId")
+		void studentCheckIn(Attendance attendance);
 
 
 
-	//전체 출석 데이터 조회
-	    @Select("""
-	    SELECT 
-	        COALESCE(a.attendance_id, 0) AS attendance_id, 
-	        s.student_id AS student_id, 
-	        s.name AS name, 
-	        s.university AS university,   
-	        s.department AS department,   
-	        s.class_id AS class_id, 
-	        c.class_name AS class_name, 
-	        COALESCE(a.date, #{date}) AS date, 
-	        COALESCE(a.state, 'absent') AS state, 
-	        COALESCE(a.reason, '미등록') AS reason, 
-	        COALESCE(s.remarks, '') AS remarks,  
-	        COALESCE(a.created_at, NULL) AS created_at, 
-	        COALESCE(a.updated_at, NULL) AS updated_at
-	    FROM Student s
-	    LEFT JOIN Attendance a 
-	        ON s.student_id = a.student_id 
-	        AND a.class_id = #{classId} 
-	        AND a.date = #{date}
-	    LEFT JOIN Class c 
-	        ON s.class_id = c.class_id
-	    WHERE s.class_id = #{classId}
-	    ORDER BY s.university ASC, s.department ASC, s.student_id ASC
-	""")
-	@Results(id = "AttendanceResultMap", value = {
-	    @Result(column = "attendance_id", property = "attendanceId"),
-	    @Result(column = "student_id", property = "studentId"),
-	    @Result(column = "name", property = "name"),
-	    @Result(column = "university", property = "university"),
-	    @Result(column = "department", property = "department"),
-	    @Result(column = "class_id", property = "classId"),
-	    @Result(column = "class_name", property = "className"),
-	    @Result(column = "date", property = "date"),
-	    @Result(column = "state", property = "state"),
-	    @Result(column = "reason", property = "reason"),
-	    @Result(column = "remarks", property = "remarks"), // ✅ Student 테이블에서 remarks 가져옴 (읽기 전용)
-	    @Result(column = "created_at", property = "createdAt"),
-	    @Result(column = "updated_at", property = "updatedAt")
-	})
-	List<Attendance> findAttendanceByClassAndDate(@Param("classId") int classId, @Param("date") String date);
-
+    @Select("""
+    	    SELECT 
+    	        COALESCE(a.attendance_id, 0) AS attendance_id, 
+    	        s.student_id AS student_id, 
+    	        s.name AS name, 
+    	        s.university AS university,   
+    	        s.department AS department,   
+    	        s.class_id AS class_id, 
+    	        c.class_name AS class_name, 
+    	        COALESCE(a.date, #{date}) AS date, 
+    	        COALESCE(a.state, 'absent') AS state, 
+    	        COALESCE(a.reason, '미등록') AS reason, 
+    	        COALESCE(s.remarks, '') AS remarks,  
+    	        COALESCE(a.created_at, NULL) AS created_at, 
+    	        COALESCE(a.updated_at, NULL) AS updated_at
+    	    FROM Student s
+    	    LEFT JOIN Attendance a 
+    	        ON s.student_id = a.student_id 
+    	        AND a.class_id = #{classId} 
+    	        AND a.date = #{date}
+    	    LEFT JOIN Class c 
+    	        ON s.class_id = c.class_id
+    	    WHERE s.class_id = #{classId}
+    	""")
+    	@Results(id = "AttendanceResultMap", value = {
+    	    @Result(column = "attendance_id", property = "attendanceId"),
+    	    @Result(column = "student_id", property = "studentId"),
+    	    @Result(column = "name", property = "name"),
+    	    @Result(column = "university", property = "university"),
+    	    @Result(column = "department", property = "department"),
+    	    @Result(column = "class_id", property = "classId"),
+    	    @Result(column = "class_name", property = "className"),
+    	    @Result(column = "date", property = "date"),
+    	    @Result(column = "state", property = "state"),
+    	    @Result(column = "reason", property = "reason"),
+    	    @Result(column = "remarks", property = "remarks"), // ✅ Student 테이블에서 remarks 가져옴 (읽기 전용)
+    	    @Result(column = "created_at", property = "createdAt"),
+    	    @Result(column = "updated_at", property = "updatedAt")
+    	})
+    	List<Attendance> findAttendanceByClassAndDate(@Param("classId") int classId, @Param("date") String date);
 
 	@Insert("""
 		    INSERT INTO Attendance (student_id, class_id, date, state, created_at, updated_at)
@@ -139,19 +136,26 @@ public interface AttendanceMapper {
     """)
     int checkDuplicateAttendance(@Param("studentId") String studentId, @Param("classId") int classId, @Param("date") String date);
 
-@Select("""
-    SELECT a.attendance_id, a.student_id, a.class_id, a.date, a.state, a.created_at, a.updated_at 
-    FROM Attendance a
-    JOIN Student s ON a.student_id = s.student_id
-    WHERE a.student_id = #{studentId} 
-      AND a.class_id = #{classId} 
-      AND a.date = #{date}
-    ORDER BY s.university ASC, s.department ASC, a.student_id ASC
-""")
-Attendance getAttendanceByStudentAndDate(
-    @Param("studentId") String studentId, 
-    @Param("classId") int classId, 
-    @Param("date") String date
-);
+ // ✅ 출석 기록 조회
+    @Select("""
+    	    SELECT attendance_id, student_id, class_id, date, state, created_at, updated_at
+    	    FROM Attendance 
+    	    WHERE student_id = #{studentId} 
+    	      AND class_id = #{classId} 
+    	      AND date = #{date}
+    	""")
+    	Attendance getAttendanceByStudentAndDate(
+    	    @Param("studentId") String studentId, 
+    	    @Param("classId") int classId, 
+    	    @Param("date") String date
+    	);
+    
+    // ✅ 새로 추가된 핵심 메서드 (JOIN 없이 순수 Attendance 조회)
+    @Select("SELECT attendance_id, student_id, class_id, date, state, created_at, updated_at " +
+            "FROM Attendance " +
+            "WHERE student_id = #{studentId} AND class_id = #{classId} AND date = #{date}")
+    Attendance getSimpleAttendanceByStudentAndDate(@Param("studentId") String studentId,
+                                                   @Param("classId") int classId,
+                                                   @Param("date") String date);
 
 }
