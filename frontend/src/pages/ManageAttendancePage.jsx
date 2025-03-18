@@ -40,11 +40,11 @@ const ManageAttendancePage = () => {
   ]);
 
   const getKSTDate = (date) => {
-    const localDate = new Date(date);
-    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
-    return localDate.toISOString().split("T")[0];
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const kst = new Date(utc + (9 * 60 * 60 * 1000)); // KST 보정
+    return kst.toISOString().split('T')[0]; // YYYY-MM-DD
   };
-
+  
   // ✅ 출석 데이터 새로고침 (선택한 날짜 기준)
   const reloadAttendanceData = async () => {
     setIsLoading(true);
