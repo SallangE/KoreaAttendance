@@ -23,11 +23,10 @@ export const deleteAttendance = (attendanceId) =>
   axios.delete(`${API_URL}/${attendanceId}`);
 
 // ✅ 학생 출석 체크 (Check-in)
-export const studentCheckIn = (studentId, classId, date) => {
+export const studentCheckIn = (studentId, classId) => {
   return axios.post(`${API_URL}/check-in`, {
     studentId: String(studentId),  // 반드시 문자열로 변환
     classId: Number(classId),      // 숫자로 변환
-    date: String(date)             // YYYY-MM-DD 형식 유지
   });
 };
 export const addAttendance = (studentId, classId, date, state) =>
