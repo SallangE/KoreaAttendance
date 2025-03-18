@@ -117,7 +117,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         // ✅ 정상 출석 기록
         attendanceMapper.studentCheckIn(request);
-        Attendance newAttendance = attendanceMapper.getAttendanceByStudentAndDate(request.getStudentId(), request.getClassId(), request.getDate());
+        // ✅ 새로 만든 쿼리로 안전하게 조회 (학생정보 JOIN 안함)
+        Attendance newAttendance = attendanceMapper.getSimpleAttendanceByStudentAndDate(
+                request.getStudentId(), request.getClassId(), request.getDate());
 
         response.put("message", "✅ 출결 상태가 기록되었습니다.");
         response.put("state", newAttendance.getState());
