@@ -77,7 +77,7 @@ public interface AttendanceMapper {
     	    LEFT JOIN Attendance a 
     	        ON s.student_id = a.student_id 
     	        AND a.class_id = #{classId} 
-    	        AND a.date = #{date}
+    	        AND DATE(a.date) = #{date}
     	    LEFT JOIN Class c 
     	        ON s.class_id = c.class_id
     	    WHERE s.class_id = #{classId}
