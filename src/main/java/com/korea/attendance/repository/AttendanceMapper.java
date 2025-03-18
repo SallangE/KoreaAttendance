@@ -35,7 +35,7 @@ public interface AttendanceMapper {
 	    SELECT 
 	        #{studentId}, 
 	        #{classId}, 
-	        CURDATE(), 
+	        #{date},  -- ✅ 프론트에서 넘긴 날짜 사용
 	        CASE 
 	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_start AND c.present_end THEN 'present'
 	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_end AND c.late_end THEN 'late'
@@ -49,13 +49,11 @@ public interface AttendanceMapper {
 	        SELECT 1 FROM Attendance 
 	        WHERE student_id = #{studentId} 
 	          AND class_id = #{classId} 
-	          AND date = CURDATE()
+	          AND date = #{date}  -- ✅ 여기서도 CURDATE() 제거
 	    )
 	""")
 	@Options(useGeneratedKeys = true, keyProperty = "attendanceId")
 	void studentCheckIn(Attendance attendance);
-
-
 
 
     @Select("""
