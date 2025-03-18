@@ -26,11 +26,10 @@ const AttendancePage = () => {
   const date = kstTime.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\. /g, "-").replace(/\./g, "");
   console.log("📅 프론트에서 요청하는 날짜 (KST):", date);
 
-
   const studentId = user.userId; // 로그인된 학생 ID
 
   try {
-    const response = await studentCheckIn(studentId, Number(classId), date);
+    const response = await studentCheckIn(studentId, Number(classId));
 
     console.log("✅ API 응답 데이터:", response.data);
 
