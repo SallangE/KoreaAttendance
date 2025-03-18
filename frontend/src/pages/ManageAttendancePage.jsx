@@ -61,10 +61,11 @@ const ManageAttendancePage = () => {
     }
   };
 
- // ✅ 날짜 변경 시 로컬 스토리지에도 저장
+ // ✅ 날짜 변경 시 캘린더가 utc기준이 아닌 한국시간으로 계산하도록
  const handleDateChange = (date) => {
-  // 캘린더에서 받은 값을 localDate로 변환
-  const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(date.getTime() + kstOffset);
+  const localDate = new Date(kstDate.getFullYear(), kstDate.getMonth(), kstDate.getDate());
   setSelectedDate(localDate);
   localStorage.setItem("selectedDate", localDate.toISOString());
 };
