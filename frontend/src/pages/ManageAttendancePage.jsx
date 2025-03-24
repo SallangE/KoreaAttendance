@@ -91,6 +91,11 @@ const ManageAttendancePage = () => {
     localStorage.setItem("selectedDate", formattedDate);
   };
   
+  const safeDateParse = (value) => {
+    if (!value) return "미등록";
+    const parsed = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+    return isNaN(parsed.getTime()) ? "미등록" : parsed.toLocaleString("ko-KR");
+  };
   
 
   // ✅ 컬럼 정렬 기능 추가
@@ -253,8 +258,8 @@ const ManageAttendancePage = () => {
           : record.state === "late"
           ? "지각"
           : "공결",
-          "기록 시간": getKSTDateTime(record.createdAt),
-          "수정 시간": getKSTDateTime(record.updatedAt),
+          "기록 시간": safeDateParse(record.createdAt),
+          "수정 시간": safeDateParse(record.updatedAt),
       "사유": record.reason,
     }));
 
@@ -357,6 +362,8 @@ const ManageAttendancePage = () => {
                           </>)
                     ) : column.id === "actions" ? (
                       <button className="button-delete" onClick={() => handleDeleteAttendance(record.attendanceId)}>삭제</button>
+                    ) : (column.id === 'createdAt' || column.id === 'updatedAt' || column.id === 'date') ? (
+                      safeDateParse(record[column.id])
                     ) : (
                       record[column.id] || "미등록"
                     )}
