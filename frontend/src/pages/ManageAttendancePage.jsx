@@ -26,11 +26,13 @@ const ManageAttendancePage = () => {
   useEffect(() => {
     const storedDate = localStorage.getItem("selectedDate");
     if (storedDate) {
-      setSelectedDate(new Date(storedDate + "T00:00:00"));
+      // ✅ 슬래시 포맷으로 안전하게 파싱
+      setSelectedDate(new Date(storedDate));
     } else {
       setSelectedDate(new Date());
     }
   }, []);
+  
 
   useEffect(() => {
     if (selectedDate) {
@@ -78,7 +80,7 @@ const ManageAttendancePage = () => {
     setIsLoading(true);
     try {
       const formattedDate = getKSTDate(selectedDate);
-      console.log("✅ [reloadAttendanceData] 최종 서버로 보내는 formattedDate:", formattedDate);
+      console.log("✅ 서버로 보내는 formattedDate:", formattedDate);  // 핵심 로그
       if (!formattedDate) {
         console.error("날짜 포맷 오류로 서버 요청 중단");
         return;
@@ -94,13 +96,22 @@ const ManageAttendancePage = () => {
   
   const handleDateChange = (date) => {
     console.log("✅ 캘린더에서 선택된 date 객체:", date);
-    const formattedDate = getKSTDate(date);  // 여기서 재사용
-    console.log("✅ 저장하는 날짜 (YYYY-MM-DD):", formattedDate);
   
-    // 여기서도 setSelectedDate에 안전하게 Date 객체 넣기
-    setSelectedDate(new Date(date));
+    // ✅ YYYY/MM/DD 형식으로 변환 (모든 브라우저 안전)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const formattedDate = `${year}/${month}/${day}`;
+  
+    console.log("✅ 저장하는 날짜 (YYYY/MM/DD):", formattedDate);
+  
+    // ✅ localStorage에도 YYYY/MM/DD로 저장
     localStorage.setItem("selectedDate", formattedDate);
+  
+    // ✅ new Date(formattedDate)로 확실히 Date 객체 만들어 저장
+    setSelectedDate(new Date(formattedDate));
   };
+  
   
   const safeDateParse = (value) => {
     console.log("📌 [safeDateParse] 입력값:", value);
