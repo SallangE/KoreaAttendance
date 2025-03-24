@@ -35,7 +35,7 @@ public interface AttendanceMapper {
 	    SELECT 
 	        #{studentId}, 
 	        #{classId}, 
-	        #{date},  -- ✅ 프론트에서 넘긴 날짜 사용
+	        CURDATE(), 
 	        CASE 
 	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_start AND c.present_end THEN 'present'
 	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_end AND c.late_end THEN 'late'
@@ -49,11 +49,13 @@ public interface AttendanceMapper {
 	        SELECT 1 FROM Attendance 
 	        WHERE student_id = #{studentId} 
 	          AND class_id = #{classId} 
-	          AND date = #{date}  -- ✅ 여기서도 CURDATE() 제거
+	          AND date = CURDATE()
 	    )
 	""")
 	@Options(useGeneratedKeys = true, keyProperty = "attendanceId")
 	void studentCheckIn(Attendance attendance);
+
+
 
 
     @Select("""
@@ -65,7 +67,7 @@ public interface AttendanceMapper {
     	        s.department AS department,   
     	        s.class_id AS class_id, 
     	        c.class_name AS class_name, 
-    	        COALESCE(a.date, #{date}) AS date, 
+    	        COALESCE(DATE_FORMAT(a.date, '%Y-%m-%d'), #{date}) AS date,
     	        COALESCE(a.state, 'absent') AS state, 
     	        COALESCE(a.reason, '미등록') AS reason, 
     	        COALESCE(s.remarks, '') AS remarks,  
@@ -75,7 +77,7 @@ public interface AttendanceMapper {
     	    LEFT JOIN Attendance a 
     	        ON s.student_id = a.student_id 
     	        AND a.class_id = #{classId} 
-    	        AND a.date = #{date}
+    	        AND DATE(a.date) = #{date}
     	    LEFT JOIN Class c 
     	        ON s.class_id = c.class_id
     	    WHERE s.class_id = #{classId}
@@ -137,7 +139,7 @@ public interface AttendanceMapper {
 
  // ✅ 출석 기록 조회
     @Select("""
-    	    SELECT attendance_id, student_id, class_id, date, state, created_at, updated_at
+    	    SELECT attendance_id, student_id, class_id, DATE_FORMAT(date, '%Y-%m-%d') AS date, state, created_at, updated_at
     	    FROM Attendance 
     	    WHERE student_id = #{studentId} 
     	      AND class_id = #{classId} 
@@ -150,7 +152,7 @@ public interface AttendanceMapper {
     	);
     
     // ✅ 새로 추가된 핵심 메서드 (JOIN 없이 순수 Attendance 조회)
-    @Select("SELECT attendance_id, student_id, class_id, date, state, created_at, updated_at " +
+    @Select("SELECT attendance_id, student_id, class_id, DATE_FORMAT(date, '%Y-%m-%d') AS date, state, created_at, updated_at " +
             "FROM Attendance " +
             "WHERE student_id = #{studentId} AND class_id = #{classId} AND date = #{date}")
     Attendance getSimpleAttendanceByStudentAndDate(@Param("studentId") String studentId,
