@@ -2,13 +2,10 @@ import axios from "axios";
 
 const API_URL = "https://korea-attendance-96b0a03da0c9.herokuapp.com/api/attendance";
 
+// ✅ 수정 최종본
 export const fetchAttendanceByDate = async (classId, date) => {
-  // ✅ 한국 시간대(KST)로 변환
-  const localDate = new Date(date);
-  localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset()); 
-  const formattedDate = localDate.toISOString().split("T")[0]; // YYYY-MM-DD 형식으로 변환
-
-  const response = await axios.get(`${API_URL}/class/${classId}/date/${formattedDate}`);
+  console.log("📌 [API] fetchAttendanceByDate 받은 date:", date);
+  const response = await axios.get(`${API_URL}/class/${classId}/date/${date}`);
   return response.data;
 };
 
