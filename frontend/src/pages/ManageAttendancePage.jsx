@@ -54,14 +54,14 @@ const ManageAttendancePage = () => {
   ]);
 
   const getKSTDate = (date) => {
-    if (!date) return "";  // null이나 undefined 방어
-    const parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) return "";  // Invalid Date 방어
+    if (!date) return "";
+    const parsedDate = new Date(typeof date === 'string' ? date.replace(/-/g, '/') : date);
+    if (isNaN(parsedDate.getTime())) return "";
     const year = parsedDate.getFullYear();
     const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
     const day = String(parsedDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  };
+  };  
   
   const reloadAttendanceData = async () => {
     setIsLoading(true);
