@@ -54,20 +54,31 @@ const ManageAttendancePage = () => {
   ]);
 
   const getKSTDate = (date) => {
+    console.log("📌 [getKSTDate] 입력값:", date, "타입:", typeof date);
     if (!date) return "";
-    const parsedDate = new Date(typeof date === 'string' ? date.replace(/-/g, '/') : date);
-    if (isNaN(parsedDate.getTime())) return "";
+    const raw = typeof date === 'string' ? date.replace(/-/g, '/') : date;
+    console.log("📌 [getKSTDate] 변환 후 raw 값:", raw);
+  
+    const parsedDate = new Date(raw);
+    console.log("📌 [getKSTDate] new Date 결과:", parsedDate);
+    
+    if (isNaN(parsedDate.getTime())) {
+      console.error("❌ [getKSTDate] Invalid Date 발생!", raw);
+      return "";
+    }
+  
     const year = parsedDate.getFullYear();
     const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
     const day = String(parsedDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  };  
+  };
+  
   
   const reloadAttendanceData = async () => {
     setIsLoading(true);
     try {
       const formattedDate = getKSTDate(selectedDate);
-      console.log("✅ 서버로 보내는 formattedDate:", formattedDate);  // 핵심 로그
+      console.log("✅ [reloadAttendanceData] 최종 서버로 보내는 formattedDate:", formattedDate);
       if (!formattedDate) {
         console.error("날짜 포맷 오류로 서버 요청 중단");
         return;
@@ -92,10 +103,17 @@ const ManageAttendancePage = () => {
   };
   
   const safeDateParse = (value) => {
+    console.log("📌 [safeDateParse] 입력값:", value);
     if (!value) return "미등록";
-    const parsed = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+    const raw = value.includes('T') ? value : `${value}T00:00:00`;
+    console.log("📌 [safeDateParse] 변환 후 raw 값:", raw);
+  
+    const parsed = new Date(raw);
+    console.log("📌 [safeDateParse] new Date 결과:", parsed);
+  
     return isNaN(parsed.getTime()) ? "미등록" : parsed.toLocaleString("ko-KR");
   };
+  
   
 
   // ✅ 컬럼 정렬 기능 추가
