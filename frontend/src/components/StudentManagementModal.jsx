@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import { fetchClassrooms } from "../api/classroomApi";
 import { fetchStudentsByClass, registerStudent, updateStudent, deleteStudent } from "../api/studentApi";
 
 const StudentManagementModal = ({ onClose }) => {
+  const { user } = useAuth();
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
   const [students, setStudents] = useState([]);
@@ -19,11 +21,13 @@ const StudentManagementModal = ({ onClose }) => {
   });
 
   useEffect(() => {
-    fetchClassrooms()
-      .then((data) => setClassrooms(data))
-      .catch((error) => console.error("강의실 목록 불러오기 실패:", error));
-  }, []);
-
+    if (user) {
+      fetchClassrooms(user.userId)
+        .then((data) => setClassrooms(data))
+        .catch((error) => console.error("강의실 목록 불러오기 실패:", error));
+    }
+  }, [user]);
+  
   useEffect(() => {
     if (selectedClassId) {
       fetchStudentsByClass(selectedClassId)
