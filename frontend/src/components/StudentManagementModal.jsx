@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchAllClassrooms } from "../api/classroomApi";
+import { fetchClassrooms } from "../api/classroomApi";
 import { fetchStudentsByClass, registerStudent, updateStudent, deleteStudent } from "../api/studentApi";
 
 const StudentManagementModal = ({ onClose }) => {
@@ -19,7 +19,7 @@ const StudentManagementModal = ({ onClose }) => {
   });
 
   useEffect(() => {
-    fetchAllClassrooms()
+    fetchClassrooms()
       .then((data) => setClassrooms(data))
       .catch((error) => console.error("강의실 목록 불러오기 실패:", error));
   }, []);
