@@ -331,7 +331,8 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
                 }}
                 style={{
                   width: "150px",
-                  fontSize: "0.9rem",
+                  fontSize: "12px",
+                  fontFamily: "'Malgun Gothic', sans-serif",
                   lineHeight: "1.4",
                   padding: "4px",
                   overflow: "hidden",      // 🔄 줄바꿈 감지 가능
