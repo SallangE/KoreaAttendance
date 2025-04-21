@@ -105,34 +105,6 @@ const ClassroomList = () => {
         )}
       </ul>
 
-        <table>
-          <thead>
-            <tr>
-              <th>예시1</th>
-              <th>예시2</th>
-              <th>예시3</th>
-              <th>예시4</th>
-              <th>예시5</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="highlight-row">
-              <td className="highlight-row">동그라미대학</td>
-              <td className="highlight-row">동그라미학과</td>
-              <td className="highlight-row">동그라미이름</td>
-              <td className="highlight-row">동그라미학번</td>
-              <td className="highlight-row">동그라미비고</td>
-            </tr>
-            <tr>
-              <td>동그라미대학</td>
-              <td>동그라미학과</td>
-              <td>동그라미이름</td>
-              <td>동그라미학번</td>
-              <td>동그라미비고</td>
-            </tr>
-          </tbody>
-        </table>
-
       {/* ✅ 강의실 추가 모달 */}
       {showClassroomModal && (
         <AddClassroomModal
