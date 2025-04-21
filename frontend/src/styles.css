@@ -313,5 +313,8 @@ input, select {
 
   .highlight-row {
     background-color: #FFE066;
-    
+  }
+
+  .selected-row td {
+    background-color: #FFE066 !important;
   }

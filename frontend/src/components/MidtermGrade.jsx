@@ -274,9 +274,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
   {sortedStudents.map((s) => (
     <tr
       key={s.studentId}
-      style={{
-        backgroundColor: selectedIds.includes(s.studentId) ? "#FFE066" : "white"
-      }}
+      className={selectedIds.includes(s.studentId) ? "selected-row" : ""}
     >
       <td onClick={() => handleSelect(s.studentId)} style={{ cursor: "pointer", textAlign: "center", width: "40px" }}>
         <input
@@ -327,18 +325,19 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
                 onChange={(e) => {
                   handlePenaltyChange(s.studentId, e.target.value);
 
-                  // ✨ 자동 높이 조정
-                  e.target.style.height = "auto";  // 줄이 줄어들 경우를 위해 초기화
+                  // 🔄 자동 줄바꿈 대응 (높이 자동 조절)
+                  e.target.style.height = "auto";
                   e.target.style.height = `${e.target.scrollHeight}px`;
                 }}
-                rows={1}
                 style={{
                   width: "150px",
-                  overflow: "hidden",
-                  padding: "4px",
                   fontSize: "0.9rem",
                   lineHeight: "1.4",
-                  resize: "none",  // 사용자가 직접 크기 조정 못 하게
+                  padding: "4px",
+                  overflow: "hidden",      // 🔄 줄바꿈 감지 가능
+                  resize: "none",          // 사용자 수동 조절 금지
+                  minHeight: "30px",       // ✅ 최소 높이 지정
+                  boxSizing: "border-box", // ✅ 패딩 포함 계산
                 }}
               />
 
