@@ -5,7 +5,6 @@ import { fetchGradersBySemester } from "../api/graderApi";
 import GraderManagementModal from "../components/GraderManagementModal";
 import * as XLSX from "xlsx";
 import { sendGradeUpdate } from "../utils/socket";
-import { FixedSizeList as List } from "react-window";
 
 const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, ref) => {
   const [students, setStudents] = useState([]);
@@ -271,26 +270,26 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
             <th>저장</th>
           </tr>
         </thead>
-        <tbody>
-        <List
-          height={600}               // 보여질 전체 높이 (스크롤 영역)
-          itemCount={sortedStudents.length} // 전체 아이템 수
-          itemSize={60}              // 각 행의 높이 (textarea가 커지면 더 늘릴 수도 있음)
-          width="100%"
-        >
-        {({ index, style }) => {
-      const s = sortedStudents[index];
-      return (
-        <tr key={s.studentId} style={style}>
-              <td onClick={() => handleSelect(s.studentId)} style={{ cursor: "pointer", textAlign: "center", width: "40px", backgroundColor: selectedIds.includes(s.studentId) ? "#FFE066" : "white" }}>
-            <input
-                type="checkbox"
-                style={{ width: "18px", height: "18px" }}
-                checked={selectedIds.includes(s.studentId)}
-                onChange={() => handleSelect(s.studentId)}
-                onClick={(e) => e.stopPropagation()} // ✅ 클릭 이벤트 버블링 방지
-            />
-            </td>
+        <tbody style={{ maxHeight: "600px", overflowY: "auto", display: "block" }}>
+  {sortedStudents.map((s) => (
+    <tr
+      key={s.studentId}
+      style={{
+        backgroundColor: selectedIds.includes(s.studentId) ? "#FFE066" : "white",
+        display: "table",
+        tableLayout: "fixed",
+        width: "100%",
+      }}
+    >
+      <td onClick={() => handleSelect(s.studentId)} style={{ cursor: "pointer", textAlign: "center", width: "40px" }}>
+        <input
+          type="checkbox"
+          style={{ width: "18px", height: "18px" }}
+          checked={selectedIds.includes(s.studentId)}
+          onChange={() => handleSelect(s.studentId)}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </td>
               <td style={{
                     width: "100px",       // 적절한 픽셀 값
                     textAlign: "center", // 가운데 정렬 (가독성↑)
@@ -371,8 +370,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
                 <button onClick={() => handleSave(s)}>저장</button>
               </td>
             </tr>
-          );
-        }} </List>
+          ))}
         </tbody>
       </table>
 
