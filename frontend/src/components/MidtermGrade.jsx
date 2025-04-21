@@ -5,6 +5,7 @@ import { fetchGradersBySemester } from "../api/graderApi";
 import GraderManagementModal from "../components/GraderManagementModal";
 import * as XLSX from "xlsx";
 import { sendGradeUpdate } from "../utils/socket";
+import { FixedSizeList as List } from "react-window";
 
 const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, ref) => {
   const [students, setStudents] = useState([]);
@@ -271,9 +272,17 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
           </tr>
         </thead>
         <tbody>
-        {sortedStudents.map((s) => (
-            <tr key={s.studentId}>
-              <td onClick={() => handleSelect(s.studentId)} style={{ cursor: "pointer", textAlign: "center", width: "40px" }}>
+        <List
+          height={600}               // 보여질 전체 높이 (스크롤 영역)
+          itemCount={sortedStudents.length} // 전체 아이템 수
+          itemSize={60}              // 각 행의 높이 (textarea가 커지면 더 늘릴 수도 있음)
+          width="100%"
+        >
+        {({ index, style }) => {
+      const s = sortedStudents[index];
+      return (
+        <tr key={s.studentId} style={style}>
+              <td onClick={() => handleSelect(s.studentId)} style={{ cursor: "pointer", textAlign: "center", width: "40px", backgroundColor: selectedIds.includes(s.studentId) ? "#FFE066" : "white" }}>
             <input
                 type="checkbox"
                 style={{ width: "18px", height: "18px" }}
@@ -317,11 +326,26 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
                 />
               </td>
               <td>
-                <input
-                  type="text"
-                  value={s.penaltyReason || ""}
-                  onChange={(e) => handlePenaltyChange(s.studentId, e.target.value)}
-                />
+              <textarea
+                value={s.penaltyReason || ""}
+                onChange={(e) => {
+                  handlePenaltyChange(s.studentId, e.target.value);
+
+                  // ✨ 자동 높이 조정
+                  e.target.style.height = "auto";  // 줄이 줄어들 경우를 위해 초기화
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
+                rows={1}
+                style={{
+                  width: "150px",
+                  overflow: "hidden",
+                  padding: "4px",
+                  fontSize: "0.9rem",
+                  lineHeight: "1.4",
+                  resize: "none",  // 사용자가 직접 크기 조정 못 하게
+                }}
+              />
+
               </td>
               <td style={{
                     width: "50px",       // 적절한 픽셀 값
@@ -347,7 +371,8 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
                 <button onClick={() => handleSave(s)}>저장</button>
               </td>
             </tr>
-          ))}
+          );
+        }} </List>
         </tbody>
       </table>
 

@@ -310,3 +310,8 @@ input, select {
   .ilgual-button:hover {
     background-color: darkolivegreen;
   }
+
+  .highlight-row {
+    background-color: #FFE066;
+    
+  }
