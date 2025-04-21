@@ -270,15 +270,12 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
             <th>저장</th>
           </tr>
         </thead>
-        <tbody style={{ maxHeight: "600px", overflowY: "auto", display: "block" }}>
+        <tbody>
   {sortedStudents.map((s) => (
     <tr
       key={s.studentId}
       style={{
-        backgroundColor: selectedIds.includes(s.studentId) ? "#FFE066" : "white",
-        display: "table",
-        tableLayout: "fixed",
-        width: "100%",
+        backgroundColor: selectedIds.includes(s.studentId) ? "#FFE066" : "white"
       }}
     >
       <td onClick={() => handleSelect(s.studentId)} style={{ cursor: "pointer", textAlign: "center", width: "40px" }}>
