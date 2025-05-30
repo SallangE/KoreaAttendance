@@ -42,7 +42,7 @@ public interface FinalScoreMapper {
     void upsertFinalScore(FinalScore score);
     
     @Update("""
-    	    UPDATE final_score
+    	    UPDATE FinalScore
     	    SET grader_name = #{graderName}
     	    WHERE student_id = #{studentId}
     	      AND class_id = #{classId}
