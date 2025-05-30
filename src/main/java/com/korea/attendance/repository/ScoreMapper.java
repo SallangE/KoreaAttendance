@@ -53,5 +53,4 @@ public interface ScoreMapper {
 		    ON DUPLICATE KEY UPDATE grader_name = #{graderName}
 		""")
 		void upsertGraderOnly(Score score);
-
 }
