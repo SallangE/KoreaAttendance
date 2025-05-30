@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { fetchSemestersByClassId, createSemester } from "../api/semesterApi";
 import { fetchGradeWithStudents } from "../api/scoreApi";
 import MidtermGrade from "../components/MidtermGrade";
-// import FinalGrade from "../components/FinalGrade";
+import FinalGrade from "../components/FinalGrade";
 // import FinalSummary from "../components/FinalSummary";
 import GradeStats from "../components/GradeStats";
 import "../styles/ScoreManagement.css";
@@ -32,6 +32,7 @@ const ScoreManagement = () => {
   const [editingIds, setEditingIds] = useState([]);
   const editingRef = useRef([]);
   const midtermGradeRef = useRef();
+  const finalGradeRef = useRef();
 
   useEffect(() => {
     editingRef.current = editingIds;
@@ -98,7 +99,15 @@ const ScoreManagement = () => {
         );
         break;
       case "final":
-        setActiveComponent(<FinalGrade classId={classId} semester={selectedSemester} />);
+        setActiveComponent(
+          <FinalGrade
+            ref={finalGradeRef}
+            classId={classId}
+            semester={selectedSemester}
+            onStudentsUpdate={setStudentData}
+            onEditingChange={setEditingIds}
+          />
+        );
         break;
       case "summary":
         setActiveComponent(<FinalSummary classId={classId} semester={selectedSemester} />);
@@ -140,7 +149,7 @@ const ScoreManagement = () => {
             <button className="menu-button" onClick={() => setSelectedMenu("summary")}>최종 성적 집계</button>
             <button className="menu-button" style={{ backgroundColor: "gray" }} onClick={() => setSelectedMenu("stats")}>통계</button>
 
-            {selectedMenu === "midterm" && (
+            {(selectedMenu === "midterm" || selectedMenu === "final") && (
               <>
                 <hr style={{ margin: "10px 0" }} />
                 <div className="grade-summary" style={{ fontSize: "14px" }}>

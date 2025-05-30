@@ -31,6 +31,14 @@ const Header = () => {
         <div className="user-info"> {/* ✅ flex 적용된 컨테이너 */}
         <button className="home-button" onClick={() => navigate("/")}>🏠 홈</button>
           <span className="user-message">환영합니다, {user.userId}님! ({user.role})</span>
+
+          {/* ✅ 논문 검색 버튼 (특정 사용자에게만) */}
+          {user.userId === "cest99" && (
+            <button className="sortgs-btn" onClick={() => navigate("/sortgs")}>
+              📚 논문 검색 도구
+            </button>
+          )}
+
           <button className="logout-btn" onClick={handleLogout}>로그아웃</button>
         </div>
       ) : (

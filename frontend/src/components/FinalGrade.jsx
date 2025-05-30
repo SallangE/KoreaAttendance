@@ -1,12 +1,11 @@
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
-import { fetchGradeWithStudents } from "../api/scoreApi";
-import { updateGraderName, updateMidtermScore, updateMultipleMidtermScores } from "../api/gradeApi";
+import { fetchFinalGradeWithStudents, updateFinalScore, updateMultipleFinalScores, updateFinalGraderName } from "../api/scoreApi";
 import { fetchGradersBySemester } from "../api/graderApi";
 import GraderManagementModal from "../components/GraderManagementModal";
 import * as XLSX from "xlsx";
 import { sendGradeUpdate } from "../utils/socket";
 
-const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, ref) => {
+const FinalGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, ref) => {
   const [students, setStudents] = useState([]);
   const [graderName, setGraderName] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
@@ -63,9 +62,9 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
 
     const worksheet = XLSX.utils.aoa_to_sheet(wsData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "중간고사 성적");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "기말고사 성적");
 
-    XLSX.writeFile(workbook, `중간고사_성적_${semester}.xlsx`);
+    XLSX.writeFile(workbook, `기말고사_성적_${semester}.xlsx`);
   };
 
   const [selectedGraderId, setSelectedGraderId] = useState("");
@@ -126,7 +125,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
 
   useEffect(() => {
     if (classId && semester) {
-      fetchGradeWithStudents(classId, semester)
+      fetchFinalGradeWithStudents(classId, semester)
         .then((data) => {
           const valid = data.filter((s) => s && s.studentId);
           setStudents(valid);
@@ -147,7 +146,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
     const selectedStudents = students.filter((s) => selectedIds.includes(s.studentId));
     if (selectedStudents.length === 0) return alert("저장할 학생을 선택하세요.");
     try {
-      await updateMultipleMidtermScores(selectedStudents.map((s) => ({
+      await updateMultipleFinalScores(selectedStudents.map((s) => ({
         studentId: s.studentId,
         classId,
         semester,
@@ -156,7 +155,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
         graderName: s.graderName || null,
       })));
       alert("선택한 학생들의 점수와 감점사유가 저장되었습니다.");
-      const updated = await fetchGradeWithStudents(classId, semester);
+      const updated = await fetchFinalGradeWithStudents(classId, semester);
       mergeUpdatedStudents(updated);
       await sendGradeUpdate({ classId, semester });
     } catch (error) {
@@ -168,7 +167,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
   const handleSave = async (student) => {
     try {
       const graderNameToUse = student.graderName || (graders.find((g) => g.graderId === selectedGraderId)?.graderName ?? "");
-      await updateMidtermScore({
+      await updateFinalScore({
         classId,
         semester,
         studentId: student.studentId,
@@ -177,7 +176,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
         graderName: graderNameToUse
       });
       alert(`${student.name} 학생의 점수와 감점사유가 저장되었습니다.`);
-      const updated = await fetchGradeWithStudents(classId, semester);
+      const updated = await fetchFinalGradeWithStudents(classId, semester);
       mergeUpdatedStudents(updated);
       await sendGradeUpdate({ classId, semester });
     } catch (error) {
@@ -234,9 +233,9 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
       )
     );
     try {
-      await updateGraderName({ classId, semester, graderName: grader.graderName, studentIds: selectedIds });
+      await updateFinalGraderName({ classId, semester, graderName: grader.graderName, studentIds: selectedIds });
       alert("선택한 학생들의 채점자명이 저장되었습니다.");
-      const updated = await fetchGradeWithStudents(classId, semester);
+      const updated = await fetchFinalGradeWithStudents(classId, semester);
       mergeUpdatedStudents(updated);
       await sendGradeUpdate({ classId, semester });
     } catch (error) {
@@ -248,7 +247,7 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
   return (
     <div className="midterm-grade-wrapper">
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-    <h3>중간고사 성적 관리 - {semester}</h3>
+    <h3>기말고사 성적 관리 - {semester}</h3>
 
     <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "10px", marginBottom: "10px" }}>
       <label htmlFor="filterGrader">채점자 필터:</label>
@@ -439,4 +438,4 @@ const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, 
   );
 };
 
-export default forwardRef(MidtermGrade);
+export default forwardRef(FinalGrade);

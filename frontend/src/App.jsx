@@ -9,6 +9,8 @@ import AttendancePage from "./pages/AttendancePage";
 import ManageAttendancePage from "./pages/ManageAttendancePage";
 import ClassSettings from "./pages/ClassSettings"; 
 
+import SortgsPage from "./pages/SortgsPage";
+
 import ScoreManagement from "./pages/ScoreManagement";
 
 function TitleUpdater() {
@@ -53,6 +55,7 @@ function App() {
           <Route path="/classroom/:classId/manage-attendance" element={<ManageAttendancePage />} />
           <Route path="/classroom/:classId/settings" element={<ClassSettings />} />
           <Route path="/classroom/:classId/score" element={<ScoreManagement />} />
+          <Route path="/sortgs" element={<SortgsPage />} />
         </Routes>
         </main>
         <Footer />
