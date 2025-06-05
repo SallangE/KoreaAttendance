@@ -303,12 +303,34 @@ input, select {
     background-color: olivedrab;
   }
 
+  .grade-table td,
+.grade-table th {
+  font-size: 16px; /* 필요 시 명시적으로 td/th에도 적용 */
+}
+
+  .grade-table2 td,
+.grade-table2 th {
+  font-size: 16px; /* 필요 시 명시적으로 td/th에도 적용 */
+}
+
+  .grade-table2 th {
+    background-color: #1929A4;
+  }
+
   .ilgual-button {
     background-color: olivedrab;
   }
 
   .ilgual-button:hover {
     background-color: darkolivegreen;
+  }
+
+    .ilgual-button2 {
+    background-color: #1929A4;
+  }
+
+  .ilgual-button2:hover {
+    background-color: #101A69;
   }
 
   .highlight-row {

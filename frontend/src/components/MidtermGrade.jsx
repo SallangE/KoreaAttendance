@@ -5,6 +5,7 @@ import { fetchGradersBySemester } from "../api/graderApi";
 import GraderManagementModal from "../components/GraderManagementModal";
 import * as XLSX from "xlsx";
 import { sendGradeUpdate } from "../utils/socket";
+import "../styles/FinalSummary.css";
 
 const MidtermGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, ref) => {
   const [students, setStudents] = useState([]);

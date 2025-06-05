@@ -4,6 +4,7 @@ import { fetchGradersBySemester } from "../api/graderApi";
 import GraderManagementModal from "../components/GraderManagementModal";
 import * as XLSX from "xlsx";
 import { sendGradeUpdate } from "../utils/socket";
+import "../styles/FinalSummary.css";
 
 const FinalGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, ref) => {
   const [students, setStudents] = useState([]);
@@ -287,7 +288,7 @@ const FinalGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, re
         </button>
     </div>
     </div>
-      <table className="grade-table">
+      <table className="grade-table2">
         <thead>
           <tr>
             <th>선택</th>
@@ -417,7 +418,7 @@ const FinalGrade = ({ classId, semester, onStudentsUpdate, onEditingChange }, re
                 </option>
             ))}
             </select>
-            <button onClick={applyGraderName} className="ilgual-button">채점자 일괄 배정</button>
+            <button onClick={applyGraderName} className="ilgual-button2">채점자 일괄 배정</button>
         </div>
 
         {/* 오른쪽: 일괄 저장 */}

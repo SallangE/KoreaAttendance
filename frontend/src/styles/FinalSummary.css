@@ -1,0 +1,8 @@
+.summary-table {
+  font-size: 16px; /* 전체 폰트 크기 */
+}
+
+.summary-table td,
+.summary-table th {
+  font-size: 16px; /* 필요 시 명시적으로 td/th에도 적용 */
+}

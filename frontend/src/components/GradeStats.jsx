@@ -183,7 +183,7 @@ const GradeStats = ({ classId, semester }) => {
   
     return (
       <div style={{ padding: "20px" }}>
-        <h2>{semester} 중간고사 통계</h2>
+        <h2>{semester} 통계</h2>
   
         {/* 파이차트 */}
         <div style={{ display: "flex", justifyContent: "space-around", marginBottom: "40px", gap: "40px", flexWrap: "wrap" }}>

@@ -6,7 +6,7 @@ import { fetchSemestersByClassId, createSemester } from "../api/semesterApi";
 import { fetchGradeWithStudents } from "../api/scoreApi";
 import MidtermGrade from "../components/MidtermGrade";
 import FinalGrade from "../components/FinalGrade";
-// import FinalSummary from "../components/FinalSummary";
+import FinalSummary from "../components/FinalSummary";
 import GradeStats from "../components/GradeStats";
 import "../styles/ScoreManagement.css";
 import { connectWebSocket } from "../utils/socket";
@@ -55,6 +55,10 @@ const ScoreManagement = () => {
           if (midtermGradeRef.current?.mergeUpdatedStudents) {
             console.log("📞 mergeUpdatedStudents 호출 전 studentId들:", valid.map(s => `${s.studentId}:${s.score}`));
             midtermGradeRef.current.mergeUpdatedStudents(valid);
+          }
+
+          if (finalGradeRef.current?.mergeUpdatedStudents) {
+            finalGradeRef.current.mergeUpdatedStudents(valid);
           }
         });
       }
