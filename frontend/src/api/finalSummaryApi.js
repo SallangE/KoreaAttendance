@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8080/api/final-summary";
+const API_URL = "https://korea-attendance-96b0a03da0c9.herokuapp.com/api/final-summary";
 
 // ✅ 초기 렌더링용 API (출석 점수 제외)
 export const fetchFinalSummaryBasic = async (classId) => {
