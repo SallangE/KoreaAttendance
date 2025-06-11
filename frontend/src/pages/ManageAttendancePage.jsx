@@ -7,6 +7,7 @@ import {
   deleteAttendance,
   addAttendance,
 } from "../api/attendanceApi";
+import { fetchClassName } from "../api/classroomApi";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import * as XLSX from "xlsx";
@@ -30,6 +31,8 @@ const ManageAttendancePage = () => {
   "학내 행사",
   "기타"
 ];
+const [className, setClassName] = useState("");
+
 
 
   // ✅ 기존에 선택한 날짜 가져오기 (없으면 오늘 날짜)
@@ -49,6 +52,20 @@ const ManageAttendancePage = () => {
       reloadAttendanceData();
     }
   }, [selectedDate, classId]);
+
+  useEffect(() => {
+  const getClassName = async () => {
+    try {
+      const name = await fetchClassName(classId);
+      setClassName(name);
+    } catch (error) {
+      console.error("클래스 이름을 불러오는 데 실패했습니다:", error);
+    }
+  };
+
+  if (classId) getClassName();
+}, [classId]);
+
 
   // ✅ 컬럼 리스트 (사용자가 보는 화면과 동일한 순서)
   const [columns, setColumns] = useState([
@@ -318,12 +335,11 @@ const ManageAttendancePage = () => {
           }
         }}
       />
-      <button onClick={handleDownloadExcel} className="settings-button">
-        엑셀 다운로드
-      </button>
-      <Link to="/">
-        <button className="delete-button">메인으로 돌아가기</button>
-      </Link>
+      <div className="attendance-header">
+        <button className="settings-button">엑셀 다운로드</button>
+        <Link to="/"><button className="delete-button">메인으로 돌아가기</button></Link>
+        <span className="class-name">📘 {className}</span>
+      </div>
 
       {isLoading ? (
         <p className="loading-text">데이터 로딩 중...</p>

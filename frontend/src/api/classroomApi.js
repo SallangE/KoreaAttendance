@@ -39,3 +39,8 @@ export const fetchClassDetail = async (classId) => {
   const response = await axios.get(`${API_BASE_URL}/detail/${classId}`);
   return response.data;
 };
+
+export const fetchClassName = async (classId) => {
+  const response = await axios.get(`${API_BASE_URL}/detail/${classId}`);
+  return response.data.className;
+};

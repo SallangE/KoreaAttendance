@@ -29,3 +29,8 @@ export const studentCheckIn = (studentId, classId) => {
 export const addAttendance = (studentId, classId, date, state) =>
   axios.post(`${API_URL}/add`, { studentId, classId, date, state });
 
+
+export const fetchClassName = async (classId) => {
+  const response = await axios.get(`/api/classes/${classId}`); // 클래스 ID로 조회
+  return response.data.className;
+};

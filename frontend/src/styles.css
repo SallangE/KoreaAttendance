@@ -340,3 +340,27 @@ input, select {
   .selected-row td {
     background-color: #FFE066 !important;
   }
+
+.attendance-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+/* 가운데 정렬 (절대 위치) */
+.class-name {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 30px;
+  font-weight: bold;
+  color: black;
+  background-color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  white-space: nowrap;
+  pointer-events: none; /* 버튼 클릭 간섭 방지 */
+}
