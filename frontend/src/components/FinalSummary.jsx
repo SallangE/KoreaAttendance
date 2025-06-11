@@ -7,9 +7,6 @@ import "../styles/FinalSummary.css";
 import * as XLSX from 'xlsx';
 
 const FinalSummary = ({ classId }) => {
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [selectedDays, setSelectedDays] = useState([]);
   const [students, setStudents] = useState([]);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [isGradingMode, setIsGradingMode] = useState(false);
@@ -35,26 +32,45 @@ const FinalSummary = ({ classId }) => {
   };
 
   // 기본(첫 렌더링 시)에는 "단과대학 ↑, 학과 ↑, 학번 ↑" 순으로 multi-level 정렬
-  useEffect(() => {
-    const loadInitialData = async () => {
-      const data = await fetchFinalSummaryBasic(classId);
-      const updated = data.map((s) => ({
+useEffect(() => {
+  const calculateFixedAttendance = async () => {
+    const data = await fetchFinalSummaryBasic(classId); // 출석 일수 계산 없이 전체 목록 조회
+
+    const fixedZeroList = [
+      '2024120090', '2023170678', '2022131034', '2024130309',
+      '2024140567', '2016130421', '2017171041', '2023150433', '2023150440'
+    ];
+
+    const updated = data.map((s) => {
+      const isZeroTarget = fixedZeroList.includes(String(s.studentId));
+      const attendanceCalculated = isZeroTarget ? 0 : 20;
+      const midtermScore = Number(s.score) || 0;
+      const finalScore = Number(s.finalScore) || 0;
+      const totalScore = attendanceCalculated + midtermScore + finalScore;
+      const grade = applyGradeWithLimit(totalScore, s.remarks, s.absentCount, attendanceCalculated);
+
+
+      return {
         ...s,
-        attendanceScore: null, // 초기에는 null
-        totalScore: null,      // 계산하지 않음
-        grade: null,           // 등급도 없음
-      }));
-      // 기본 정렬: university asc → department asc → studentId asc
-      updated.sort((a, b) => {
-        if (a.university !== b.university) return a.university.localeCompare(b.university);
-        if (a.department !== b.department) return a.department.localeCompare(b.department);
-        return a.studentId.localeCompare(b.studentId);
-      });
-      setStudents(updated);
-      // sortConfig.key는 null 상태 유지 (기본 정렬 상태)
-    };
-    loadInitialData();
-  }, [classId]);
+        attendanceCalculated, // ✅ 별도 필드로 사용
+        totalScore,
+        grade
+      };
+    });
+
+    updated.sort((a, b) => {
+      if (a.university !== b.university) return a.university.localeCompare(b.university);
+      if (a.department !== b.department) return a.department.localeCompare(b.department);
+      return a.studentId.localeCompare(b.studentId);
+    });
+
+    setStudents(updated);
+    setSortConfig({ key: null, direction: 'asc' });
+  };
+
+  calculateFixedAttendance();
+}, [classId]);
+
 
   const handleCalculateAttendance = async () => {
     if (!startDate || !endDate) {
@@ -74,14 +90,22 @@ const FinalSummary = ({ classId }) => {
       semester: "2025-1",
     });
 
-    const updated = data.map((s) => {
-      const attendanceScore = s.absentCount >= 7 ? 0 : 20;
-      const midtermScore = s.score ?? 0;
-      const finalScore = s.finalScore ?? 0;
-      const totalScore = attendanceScore + midtermScore + finalScore;
-      const grade = applyGradeWithLimit(totalScore, s.remarks, s.absentCount);
-      return { ...s, attendanceScore, totalScore, grade };
-    });
+    const fixedZeroList = [
+  '2024120090', '2023170678', '2022131034', '2024130309',
+  '2024140567', '2016130421', '2017171041', '2023150433', '2023150440'
+];
+
+const updated = data.map((s) => {
+  const isZeroTarget = fixedZeroList.includes(s.studentId);
+const attendanceCalculated = isZeroTarget ? 0 : 20;
+  const midtermScore = s.score ?? 0;
+  const finalScore = s.finalScore ?? 0;
+  const totalScore = attendanceCalculated + midtermScore + finalScore;
+  const grade = applyGradeWithLimit(totalScore, s.remarks, s.absentCount);
+
+  return { ...s, attendanceCalculated, totalScore, grade };
+});
+
 
     // 출석 계산 후에도 기본 정렬 적용하려면:
     updated.sort((a, b) => {
@@ -101,7 +125,7 @@ const FinalSummary = ({ classId }) => {
 
   const handleApplyGradeRanges = () => {
     const updated = students.map((s) => {
-      const grade = applyGradeWithLimit(s.totalScore, s.remarks, s.absentCount);
+      const grade = applyGradeWithLimit(s.totalScore, s.remarks, s.absentCount, s.attendanceCalculated);
       return { ...s, grade };
     });
     setStudents(updated);
@@ -123,18 +147,19 @@ const FinalSummary = ({ classId }) => {
     if (remarks.includes('재수강')) return 'A';
     return null;
   };
-  const applyGradeWithLimit = (score, remarks, absentCount) => {
-    if (absentCount >= 7) return 'F'; // 결석 7회 이상 → 무조건 F
+const applyGradeWithLimit = (score, remarks, absentCount, attendanceCalculated) => {
+  if (absentCount >= 7 || attendanceCalculated === 0) return 'F'; // ❗ 출석 점수 0점이면 F
 
-    const baseGradeInfo = gradeRanges.find((g) => score >= g.min && score <= g.max) || { grade: 'F' };
-    const maxAllowedGrade = getMaxAllowedGrade(remarks);
-    if (!maxAllowedGrade) return baseGradeInfo.grade;
+  const baseGradeInfo = gradeRanges.find((g) => score >= g.min && score <= g.max) || { grade: 'F' };
+  const maxAllowedGrade = getMaxAllowedGrade(remarks);
+  if (!maxAllowedGrade) return baseGradeInfo.grade;
 
-    const maxGradeInfo = gradeRanges.find((g) => g.grade === maxAllowedGrade);
-    if (!maxGradeInfo) return baseGradeInfo.grade;
+  const maxGradeInfo = gradeRanges.find((g) => g.grade === maxAllowedGrade);
+  if (!maxGradeInfo) return baseGradeInfo.grade;
 
-    return score > maxGradeInfo.max ? maxAllowedGrade : baseGradeInfo.grade;
-  };
+  return score > maxGradeInfo.max ? maxAllowedGrade : baseGradeInfo.grade;
+};
+
 
   // 컬럼별 토글 정렬
   const handleSort = (key) => {
@@ -173,7 +198,7 @@ const FinalSummary = ({ classId }) => {
   const handleDownloadExcel = () => {
     const headers = isGradingMode
       ? ['단과대학', '학과', '학번', '이름', '비고', '등급']
-      : ['단과대학', '학과', '학번', '이름', '비고', '결석 횟수', '출석(20)', '중간(40)', '기말(40)', '총점', '등급'];
+      : ['단과대학', '학과', '학번', '이름', '비고', '출석(20)', '중간(40)', '기말(40)', '총점', '등급'];
 
     // sortedStudents 사용해서 다운로드 시에도 동일 순서 유지
     const rows = sortedStudents.map((s) => {
@@ -183,8 +208,7 @@ const FinalSummary = ({ classId }) => {
       } else {
         return [
           ...baseData,
-          s.absentCount,
-          s.attendanceScore ?? '-',
+          s.attendanceCalculated ?? '-',
           s.score ?? 0,
           s.finalScore ?? 0,
           s.totalScore ?? '-',
@@ -215,29 +239,7 @@ const FinalSummary = ({ classId }) => {
     <div style={{ padding: '2rem', position: 'relative' }}>
       <h2>최종 성적 집계</h2>
 
-      {/* 날짜 선택 + 출석 계산 / 점수 구간 / 채점 모드 / 엑셀 다운로드 / 기본 정렬 버튼 */}
-      <div style={{ marginBottom: '1rem' }}>
-        <label>시작일: </label>
-        <DatePicker selected={startDate} onChange={setStartDate} />
-        <label style={{ marginLeft: '1rem' }}>종료일: </label>
-        <DatePicker selected={endDate} onChange={setEndDate} />
-      </div>
-
-      <div style={{ marginBottom: '1rem' }}>
-        {['월', '화', '수', '목', '금', '토', '일'].map((day, idx) => (
-          <label key={idx} style={{ marginRight: '1rem' }}>
-            <input
-              type="checkbox"
-              checked={selectedDays.includes(idx)}
-              onChange={() => toggleDay(idx)}
-            />{' '}
-            {day}
-          </label>
-        ))}
-      </div>
-
       <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
-        <button onClick={handleCalculateAttendance}>출석 점수 반영</button>
         <button onClick={() => setShowGradeModal(true)}>점수 구간 설정</button>
         <button onClick={() => setIsGradingMode((prev) => !prev)}>
           {isGradingMode ? '전체 보기' : '채점 모드'}
@@ -350,7 +352,7 @@ const FinalSummary = ({ classId }) => {
       )}
 
       {/* 최종 성적 테이블 */}
-      <table className="summary-table" style={{ marginTop: '8rem', borderCollapse: 'collapse' }}>
+      <table className="summary-table" style={{ marginTop: '14rem', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <th onClick={() => handleSort('university')}>
@@ -374,11 +376,8 @@ const FinalSummary = ({ classId }) => {
               </th>
             ) : (
               <>
-                <th onClick={() => handleSort('absentCount')}>
-                  결석 횟수 {sortConfig.key === 'absentCount' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : ''}
-                </th>
-                <th onClick={() => handleSort('attendanceScore')}>
-                  출석(20) {sortConfig.key === 'attendanceScore' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : ''}
+                <th onClick={() => handleSort('attendanceCalculated')}>
+                  출석(20) {sortConfig.key === 'attendanceCalculated' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : ''}
                 </th>
                 <th onClick={() => handleSort('score')}>
                   중간(40) {sortConfig.key === 'score' ? (sortConfig.direction === 'asc' ? '🔼' : '🔽') : ''}
@@ -419,8 +418,7 @@ const FinalSummary = ({ classId }) => {
                 <td>{s.grade ?? '-'}</td>
               ) : (
                 <>
-                  <td>{s.absentCount}</td>
-                  <td>{s.attendanceScore ?? '-'}</td>
+                  <td>{s.attendanceCalculated ?? '-'}</td>
                   <td>{s.score ?? 0}</td>
                   <td>{s.finalScore ?? 0}</td>
                   <td>{s.totalScore ?? '-'}</td>
