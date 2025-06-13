@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchClassDetail } from "../api/classroomApi";
 import { useAuth } from "../context/AuthContext";
 import { fetchSemestersByClassId, createSemester } from "../api/semesterApi";
-import { fetchGradeWithStudents } from "../api/scoreApi";
+import { fetchGradeWithStudents, fetchFinalGradeWithStudents } from "../api/scoreApi";
 import MidtermGrade from "../components/MidtermGrade";
 import FinalGrade from "../components/FinalGrade";
 import FinalSummary from "../components/FinalSummary";
@@ -42,28 +42,37 @@ const ScoreManagement = () => {
   const minScore = scoredStudents.length > 0 ? Math.min(...scoredStudents.map(s => parseFloat(s.score))) : "없음";
   const averageScore = scoredStudents.length > 0 ? (scoredStudents.reduce((acc, s) => acc + parseFloat(s.score), 0) / scoredStudents.length).toFixed(1) : "없음";
 
-  useEffect(() => {
-    connectWebSocket((message) => {
-      if (String(message.classId) === String(classId) && message.semester === selectedSemester) {
-        console.log("📩 받은 메시지:", message);
-  
-        fetchGradeWithStudents(classId, selectedSemester).then((newData) => {
-          const valid = newData.filter(s => s && s.studentId);
-          console.log("🎯 새로 받은 서버 데이터:", valid);
-  
-          // MidtermGrade 내부 병합 함수 직접 호출
-          if (midtermGradeRef.current?.mergeUpdatedStudents) {
-            console.log("📞 mergeUpdatedStudents 호출 전 studentId들:", valid.map(s => `${s.studentId}:${s.score}`));
-            midtermGradeRef.current.mergeUpdatedStudents(valid);
-          }
+useEffect(() => {
+  connectWebSocket((message) => {
+    if (String(message.classId) === String(classId) && message.semester === selectedSemester) {
+      console.log("📩 받은 메시지:", message);
 
-          if (finalGradeRef.current?.mergeUpdatedStudents) {
-            finalGradeRef.current.mergeUpdatedStudents(valid);
-          }
-        });
-      }
-    });
-  }, [classId, selectedSemester]);
+      // 선택된 메뉴에 따라 올바른 fetch 함수 선택
+      const fetchFn =
+        selectedMenu === "midterm"
+          ? fetchGradeWithStudents
+          : selectedMenu === "final"
+          ? fetchFinalGradeWithStudents
+          : null;
+
+      if (!fetchFn) return;
+
+      fetchFn(classId, selectedSemester).then((newData) => {
+        const valid = newData.filter((s) => s && s.studentId);
+        console.log("🎯 새로 받은 서버 데이터:", valid);
+
+        if (selectedMenu === "midterm" && midtermGradeRef.current?.mergeUpdatedStudents) {
+          midtermGradeRef.current.mergeUpdatedStudents(valid);
+        }
+
+        if (selectedMenu === "final" && finalGradeRef.current?.mergeUpdatedStudents) {
+          finalGradeRef.current.mergeUpdatedStudents(valid);
+        }
+      });
+    }
+  });
+}, [classId, selectedSemester, selectedMenu]);
+
   
 
   useEffect(() => {
