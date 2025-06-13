@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   fetchAttendanceByDate,
@@ -12,6 +12,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import * as XLSX from "xlsx";
 import "../styles.css";
+import { uploadStudentExcel } from "../api/studentApi";
 
 const ManageAttendancePage = () => {
   const { classId } = useParams();
@@ -32,6 +33,9 @@ const ManageAttendancePage = () => {
   "기타"
 ];
 const [className, setClassName] = useState("");
+const [showModal, setShowModal] = useState(false);
+const [selectedFile, setSelectedFile] = useState(null);
+const fileInputRef = useRef(null);
 
 
 
@@ -65,7 +69,6 @@ const [className, setClassName] = useState("");
 
   if (classId) getClassName();
 }, [classId]);
-
 
   // ✅ 컬럼 리스트 (사용자가 보는 화면과 동일한 순서)
   const [columns, setColumns] = useState([
@@ -149,14 +152,20 @@ const [className, setClassName] = useState("");
 
   // ✅ 정렬된 데이터 반환
   const sortedData = [...attendanceData].sort((a, b) => {
-    if (!sortConfig.key) return 0;
-    const aValue = a[sortConfig.key] || "";
-    const bValue = b[sortConfig.key] || "";
+  if (!sortConfig.key) {
+    // 기본 정렬: 단과대학 → 학과 → 학번 (모두 오름차순)
+    const aKey = `${a.university}-${a.department}-${a.studentId}`;
+    const bKey = `${b.university}-${b.department}-${b.studentId}`;
+    return aKey.localeCompare(bKey);
+  }
 
-    if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-  });
+  const aValue = a[sortConfig.key] || "";
+  const bValue = b[sortConfig.key] || "";
+
+  if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+  if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+  return 0;
+});
 
   const getKSTDateTime = (date) => {
     if (!date) return "";
@@ -167,6 +176,20 @@ const [className, setClassName] = useState("");
     );
     return parsedDate.toISOString().replace("T", " ").split(".")[0];
   };
+
+  const handleDownloadTemplate = () => {
+  const worksheetData = [
+    ["번호", "대학/대학원", "학과", "학번", "성명", "비고"],
+    ["1", "예시대학", "예시학과", "2023000001", "홍길동", "ex.(재수강)"],
+    ["2", "", "", "", "", ""], // 추가행은 비워둠
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "학생명단양식");
+
+  XLSX.writeFile(workbook, "학생명단_양식.xlsx");
+};
 
   const handleStateChange = async (attendanceId, studentId, newState) => {
     try {
@@ -335,10 +358,17 @@ const [className, setClassName] = useState("");
           }
         }}
       />
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <span className="class-name">📘 {className}</span>
+      </div>
       <div className="attendance-header">
         <button className="settings-button">엑셀 다운로드</button>
         <Link to="/"><button className="delete-button">메인으로 돌아가기</button></Link>
-        <span className="class-name">📘 {className}</span>
+        <div className="upload-button-wrapper">
+          <button className="settings-button" onClick={() => setShowModal(true)}>
+            엑셀 업로드
+          </button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -502,6 +532,76 @@ const [className, setClassName] = useState("");
           </tbody>
         </table>
       )}
+
+   {/* 엑셀 업로드 모달 */}
+{showModal && (
+  <div className="modal-overlay" onClick={() => setShowModal(false)}>
+    <div className="modal-content2" onClick={(e) => e.stopPropagation()}>
+       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <h3 style={{ margin: 0 }}>📤 엑셀로 명단 업로드</h3>
+          <button className="button-cancel" onClick={() => setShowModal(false)}>
+            X
+          </button>
+        </div>
+
+
+      <div
+        className="drop-zone"
+        onDrop={(e) => {
+          e.preventDefault();
+          setSelectedFile(e.dataTransfer.files[0]);
+        }}
+        onDragOver={(e) => e.preventDefault()}
+        onClick={() => fileInputRef.current.click()} // 클릭으로 파일 선택도 가능
+      >
+        {selectedFile ? (
+          <p>{selectedFile.name}</p>
+        ) : (
+          <>
+            <span className="icon">➕</span>
+            <p>파일을 이곳에 드래그하거나 클릭하여 선택하세요</p>
+          </>
+        )}
+      </div>
+
+      <input
+        type="file"
+        accept=".xlsx,.xls"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={(e) => setSelectedFile(e.target.files[0])}
+      />
+
+      <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+  <button
+    onClick={async () => {
+      if (!selectedFile) {
+        alert("파일을 먼저 선택하세요.");
+        return;
+      }
+
+      try {
+        await uploadStudentExcel(classId, selectedFile);
+        alert("학생 명단이 업로드되었습니다.");
+        setShowModal(false);
+        setSelectedFile(null);
+        reloadAttendanceData(); // 출석 데이터 새로고침
+      } catch (err) {
+        console.error("업로드 실패:", err);
+        alert("업로드 중 오류 발생");
+      }
+    }}
+  >
+    업로드
+  </button>
+
+  <button onClick={handleDownloadTemplate} className="excel-download-button">
+    양식 다운로드
+  </button>
+</div>
+    </div>
+  </div>
+)}
     </div> // ✅ 최종적으로 닫기
   );
 };

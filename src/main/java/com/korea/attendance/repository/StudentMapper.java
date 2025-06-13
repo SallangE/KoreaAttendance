@@ -23,6 +23,13 @@ public interface StudentMapper {
     """)
     void registerStudent(Student student);
 
+    // ✅ 엑셀 업로드용 학생 삽입 (insertStudent)
+    @Insert("""
+        INSERT INTO Student (student_id, university, department, name, email, class_id, remarks)
+        VALUES (#{studentId}, #{university}, #{department}, #{name}, #{email}, #{classId}, #{remarks})
+    """)
+    void insertStudent(Student student);
+    
     // ✅ 특정 강의실에 속한 모든 학생 조회 (SELECT)
     @Select("""
     SELECT student_id, university, department, name, email, class_id, remarks
@@ -66,4 +73,14 @@ List<Student> findStudentsByClass(@Param("classId") int classId);
         DELETE FROM Student WHERE student_id = #{studentId}
     """)
     void deleteStudent(@Param("studentId") String studentId);
+    
+    //엑셀 일괄 주입시 해당 강의실에 중복 학번이 있는지 체크하는 메서드
+    @Select("""
+    	    SELECT COUNT(*) > 0
+    	    FROM Student
+    	    WHERE student_id = #{studentId} AND class_id = #{classId}
+    	""")
+    	boolean existsByStudentIdAndClassId(@Param("studentId") String studentId, @Param("classId") int classId);
+
+    
 }

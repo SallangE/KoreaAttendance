@@ -349,11 +349,15 @@ input, select {
   margin: 20px 0;
 }
 
+.upload-button-wrapper {
+  margin-left: auto;
+}
+
 /* 가운데 정렬 (절대 위치) */
 .class-name {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  /* 기존 absolute 제거 */
+  position: static; /* 또는 아예 삭제 */
+  transform: none; /* 삭제 */
   font-size: 30px;
   font-weight: bold;
   color: black;
@@ -362,5 +366,36 @@ input, select {
   border-radius: 6px;
   border: 1px solid #ccc;
   white-space: nowrap;
-  pointer-events: none; /* 버튼 클릭 간섭 방지 */
+  text-align: center;
+}
+
+.drop-zone {
+  border: 2px dashed #aaa;
+  border-radius: 10px;
+  padding: 40px;
+  text-align: center;
+  background-color: #f9f9f9;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.drop-zone:hover {
+  background-color: #eee;
+}
+
+.drop-zone .icon {
+  font-size: 32px;
+  color: #888;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.excel-download-button {
+  background-color: #217346;
+}
+
+.excel-download-button:hover {
+  background-color: #103822;
 }

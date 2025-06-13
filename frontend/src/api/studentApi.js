@@ -26,3 +26,21 @@ export const fetchStudentsByClass = async (classId) => {
     const response = await axios.get(`${API_URL}/class/${classId}`);
     return response.data;
   };
+
+  // ✅ 엑셀 업로드 API
+export const uploadStudentExcel = async (classId, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await axios.post(
+    `${API_URL}/upload/${classId}`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};
