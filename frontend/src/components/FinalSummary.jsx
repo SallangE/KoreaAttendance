@@ -37,7 +37,7 @@ useEffect(() => {
     const data = await fetchFinalSummaryBasic(classId); // 출석 일수 계산 없이 전체 목록 조회
 
     const fixedZeroList = [
-      '2024120090', '2022131034',
+      '2024120090', '2022131034', '2023130579',
       '2016130421', '2017171041', '2023150440'
     ];
 
