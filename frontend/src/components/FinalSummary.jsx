@@ -12,15 +12,19 @@ const FinalSummary = ({ classId }) => {
   const [isGradingMode, setIsGradingMode] = useState(false);
   const [gradeRanges, setGradeRanges] = useState([
     { grade: 'A+', min: 90, max: 100 },
-    { grade: 'A', min: 80, max: 89 },
-    { grade: 'B+', min: 70, max: 79 },
-    { grade: 'B', min: 60, max: 69 },
-    { grade: 'C+', min: 50, max: 59 },
-    { grade: 'C', min: 40, max: 49 },
-    { grade: 'D+', min: 30, max: 39 },
-    { grade: 'D', min: 20, max: 29 },
-    { grade: 'F', min: 0, max: 19 },
+    { grade: 'A', min: 80, max: 89.9999 },
+    { grade: 'B+', min: 70, max: 79.9999 },
+    { grade: 'B', min: 60, max: 69.9999 },
+    { grade: 'C+', min: 50, max: 59.9999 },
+    { grade: 'C', min: 40, max: 49.9999 },
+    { grade: 'D+', min: 30, max: 39.9999 },
+    { grade: 'D', min: 20, max: 29.9999 },
+    { grade: 'F', min: 0, max: 19.9999 },
   ]);
+  const fixedZeroList = [
+    '2024120090', '2022131034', '2023130579',
+    '2016130421', '2017171041', '2023150440'
+  ];
 
   // sortConfig.key = column field, sortConfig.direction = 'asc' or 'desc'
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -36,18 +40,13 @@ useEffect(() => {
   const calculateFixedAttendance = async () => {
     const data = await fetchFinalSummaryBasic(classId); // 출석 일수 계산 없이 전체 목록 조회
 
-    const fixedZeroList = [
-      '2024120090', '2022131034', '2023130579',
-      '2016130421', '2017171041', '2023150440'
-    ];
-
     const updated = data.map((s) => {
       const isZeroTarget = fixedZeroList.includes(String(s.studentId));
       const attendanceCalculated = isZeroTarget ? 0 : 20;
       const midtermScore = Number(s.score) || 0;
       const finalScore = Number(s.finalScore) || 0;
       const totalScore = attendanceCalculated + midtermScore + finalScore;
-      const grade = applyGradeWithLimit(totalScore, s.remarks);
+      const grade = applyGradeWithLimit(totalScore, s.remarks, isZeroTarget);
 
       return {
         ...s,
@@ -89,18 +88,13 @@ useEffect(() => {
       semester: "2025-1",
     });
 
-    const fixedZeroList = [
-  '2024120090', '2022131034', '2023130579',
-      '2016130421', '2017171041', '2023150440'
-];
-
 const updated = data.map((s) => {
   const isZeroTarget = fixedZeroList.includes(s.studentId);
 const attendanceCalculated = isZeroTarget ? 0 : 20;
   const midtermScore = s.score ?? 0;
   const finalScore = s.finalScore ?? 0;
   const totalScore = attendanceCalculated + midtermScore + finalScore;
-  const grade = applyGradeWithLimit(totalScore, s.remarks, s.absentCount);
+  const grade = applyGradeWithLimit(totalScore, s.remarks, isZeroTarget);
 
   return { ...s, attendanceCalculated, totalScore, grade };
 });
@@ -123,13 +117,29 @@ const attendanceCalculated = isZeroTarget ? 0 : 20;
   };
 
   const handleApplyGradeRanges = () => {
-    const updated = students.map((s) => {
-      const grade = applyGradeWithLimit(s.totalScore, s.remarks);
-      return { ...s, grade };
-    });
-    setStudents(updated);
-    setShowGradeModal(false);
-  };
+  const sorted = [...gradeRanges].sort((a, b) => a.min - b.min);
+
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const current = sorted[i];
+    const next = sorted[i + 1];
+
+    // 중복 또는 역전 확인
+    if (current.max >= next.min || current.min >= current.max || next.min >= next.max) {
+      alert(`점수 구간이 겹치거나 잘못 설정되었습니다.\n확인: ${current.grade} ~ ${next.grade}`);
+      return;
+    }
+  }
+
+  const updated = students.map((s) => {
+    const isZeroTarget = fixedZeroList.includes(String(s.studentId));
+    const grade = applyGradeWithLimit(s.totalScore, s.remarks, isZeroTarget);
+    return { ...s, grade };
+  });
+
+  setStudents(updated);
+  setShowGradeModal(false);
+};
+
 
   // PieChart 데이터
   const gradePieData = gradeRanges
@@ -146,7 +156,10 @@ const attendanceCalculated = isZeroTarget ? 0 : 20;
     if (remarks.includes('재수강')) return 'A';
     return null;
   };
-const applyGradeWithLimit = (score, remarks) => {
+const applyGradeWithLimit = (score, remarks, isZeroTarget) => {
+  // ✅ 고정 출석 0 대상이면 무조건 F
+  if (isZeroTarget) return 'F';
+
   const baseGradeInfo = gradeRanges.find((g) => score >= g.min && score <= g.max) || { grade: 'F' };
   const maxAllowedGrade = getMaxAllowedGrade(remarks);
   if (!maxAllowedGrade) return baseGradeInfo.grade;
@@ -156,8 +169,6 @@ const applyGradeWithLimit = (score, remarks) => {
 
   return score > maxGradeInfo.max ? maxAllowedGrade : baseGradeInfo.grade;
 };
-
-
 
   // 컬럼별 토글 정렬
   const handleSort = (key) => {
