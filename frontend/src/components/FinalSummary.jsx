@@ -47,8 +47,7 @@ useEffect(() => {
       const midtermScore = Number(s.score) || 0;
       const finalScore = Number(s.finalScore) || 0;
       const totalScore = attendanceCalculated + midtermScore + finalScore;
-      const grade = applyGradeWithLimit(totalScore, s.remarks, s.absentCount, attendanceCalculated);
-
+      const grade = applyGradeWithLimit(totalScore, s.remarks);
 
       return {
         ...s,
@@ -125,7 +124,7 @@ const attendanceCalculated = isZeroTarget ? 0 : 20;
 
   const handleApplyGradeRanges = () => {
     const updated = students.map((s) => {
-      const grade = applyGradeWithLimit(s.totalScore, s.remarks, s.absentCount, s.attendanceCalculated);
+      const grade = applyGradeWithLimit(s.totalScore, s.remarks);
       return { ...s, grade };
     });
     setStudents(updated);
@@ -147,9 +146,7 @@ const attendanceCalculated = isZeroTarget ? 0 : 20;
     if (remarks.includes('재수강')) return 'A';
     return null;
   };
-const applyGradeWithLimit = (score, remarks, absentCount, attendanceCalculated) => {
-  if (absentCount >= 7 || attendanceCalculated === 0) return 'F'; // ❗ 출석 점수 0점이면 F
-
+const applyGradeWithLimit = (score, remarks) => {
   const baseGradeInfo = gradeRanges.find((g) => score >= g.min && score <= g.max) || { grade: 'F' };
   const maxAllowedGrade = getMaxAllowedGrade(remarks);
   if (!maxAllowedGrade) return baseGradeInfo.grade;
@@ -159,6 +156,7 @@ const applyGradeWithLimit = (score, remarks, absentCount, attendanceCalculated) 
 
   return score > maxGradeInfo.max ? maxAllowedGrade : baseGradeInfo.grade;
 };
+
 
 
   // 컬럼별 토글 정렬
