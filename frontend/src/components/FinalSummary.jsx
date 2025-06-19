@@ -23,7 +23,7 @@ const FinalSummary = ({ classId }) => {
   ]);
   const fixedZeroList = [
     '2024120090', '2022131034', '2023130579',
-    '2016130421', '2017171041', '2023150440'
+    '2016130421', '2023150440'
   ];
 
   // sortConfig.key = column field, sortConfig.direction = 'asc' or 'desc'
