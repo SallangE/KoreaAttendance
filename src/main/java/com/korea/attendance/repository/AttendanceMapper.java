@@ -31,31 +31,29 @@ public interface AttendanceMapper {
 
 	// ✅ 학생 출석 시도 (Attendance 객체를 받아 처리) - CURDATE() 적용 버전
 	@Insert("""
-	    INSERT INTO Attendance (student_id, class_id, date, state, created_at, updated_at)
-	    SELECT 
-	        #{studentId}, 
-	        #{classId}, 
-	        CURDATE(), 
-	        CASE 
-	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_start AND c.present_end THEN 'present'
-	            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_end AND c.late_end THEN 'late'
-	            ELSE 'absent' 
-	        END,
-	        DATE_FORMAT(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), '%Y-%m-%d %H:%i:%s'),
-	        NULL
-	    FROM Class c
-	    WHERE c.class_id = #{classId} 
-	      AND NOT EXISTS (
-	        SELECT 1 FROM Attendance 
-	        WHERE student_id = #{studentId} 
-	          AND class_id = #{classId} 
-	          AND date = CURDATE()
-	    )
-	""")
-	@Options(useGeneratedKeys = true, keyProperty = "attendanceId")
-	void studentCheckIn(Attendance attendance);
-
-
+		    INSERT INTO Attendance (student_id, class_id, date, state, created_at, updated_at)
+		    SELECT 
+		        #{studentId}, 
+		        #{classId}, 
+		        DATE(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')), 
+		        CASE 
+		            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_start AND c.present_end THEN 'present'
+		            WHEN TIME(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')) BETWEEN c.present_end AND c.late_end THEN 'late'
+		            ELSE 'absent' 
+		        END,
+		        DATE_FORMAT(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'), '%Y-%m-%d %H:%i:%s'),
+		        NULL
+		    FROM Class c
+		    WHERE c.class_id = #{classId} 
+		      AND NOT EXISTS (
+		        SELECT 1 FROM Attendance 
+		        WHERE student_id = #{studentId} 
+		          AND class_id = #{classId} 
+		          AND date = DATE(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'))
+		    )
+		""")
+		@Options(useGeneratedKeys = true, keyProperty = "attendanceId")
+		void studentCheckIn(Attendance attendance);
 
 
     @Select("""
