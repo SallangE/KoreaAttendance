@@ -134,12 +134,22 @@ const fileInputRef = useRef(null);
     setSelectedDate(new Date(formattedDate));
   };
 
-  const safeDateParse = (value) => {
-    if (!value) return "미등록";
-    const raw = value.includes("T") ? value : `${value}T00:00:00`;
-    const parsed = new Date(raw);
-    return isNaN(parsed.getTime()) ? "미등록" : parsed.toLocaleString("ko-KR");
-  };
+const safeDateParse = (value) => {
+  if (!value) return "미등록";
+
+  // 공백이 있는 경우 'T'로 변환 → ISO 포맷 강제 변환
+  const raw = value.includes("T") ? value : value.replace(" ", "T");
+  const parsed = new Date(raw);
+
+  if (isNaN(parsed.getTime())) return "미등록";
+
+  return parsed.toLocaleTimeString("ko-KR", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: true,
+}); // 결과: 오전 5:50
+};
+
 
   // ✅ 컬럼 정렬 기능 추가
   const handleSort = (key) => {
