@@ -107,6 +107,7 @@ const fileInputRef = useRef(null);
         return;
       }
       const updatedData = await fetchAttendanceByDate(classId, formattedDate);
+      console.log("✅ 서버 응답 데이터:", updatedData);
       setAttendanceData(updatedData);
     } catch (error) {
       console.error("출석 데이터를 불러오는 중 오류 발생:", error);
@@ -362,7 +363,7 @@ const fileInputRef = useRef(null);
         <span className="class-name">📘 {className}</span>
       </div>
       <div className="attendance-header">
-        <button className="settings-button">엑셀 다운로드</button>
+        <button className="settings-button" onClick={handleDownloadExcel}>엑셀 다운로드</button>
         <Link to="/"><button className="delete-button">메인으로 돌아가기</button></Link>
         <div className="upload-button-wrapper">
           <button className="settings-button" onClick={() => setShowModal(true)}>
