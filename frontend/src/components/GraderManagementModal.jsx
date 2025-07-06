@@ -42,7 +42,7 @@ const GraderManagementModal = ({ semester, onClose }) => {
   
 
   const handleAdd = async () => {
-    if (graders.length >= 6) return alert("최대 6명까지만 등록할 수 있습니다.");
+    if (graders.length >= 7) return alert("최대 7명까지만 등록할 수 있습니다.");
     if (!newGraderName.trim()) return alert("채점자 이름을 입력하세요.");
   
     // ✅ 같은 색상으로 이미 등록된 채점자가 있는지 확인
