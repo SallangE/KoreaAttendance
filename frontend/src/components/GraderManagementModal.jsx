@@ -8,6 +8,7 @@ import {
 
 const colorOptions = [
     { color: "#7C0019", label: "버건디" },
+    { color: "#FFDC00", label: "노랑" },
     { color: "#FF69B4", label: "핑크" },     
     { color: "#007BFF", label: "파랑" },
     { color: "#28A745", label: "초록" },
