@@ -49,12 +49,17 @@ const FinalSummary = ({ classId, semester }) => {
         fetchFixedScoresApi(classId, semester),
       ]);
 
+      console.log("🔍 fixedList:", fixedList);
+      console.log("🔍 basicData:", basicData);
+
       // 2) fixedList를 studentId→fixedGrade 맵으로 변환
          const fixedMap = {};
 fixedList.forEach(item => {
  // make absolutely sure we're using the string form of the ID
  fixedMap[String(item.studentId)] = item.fixedGrade ?? null;
 });
+
+console.log("🔍 fixedMap:", fixedMap);
 
       // 3) 각 학생마다 totalScore 계산 후, fixedMap에 값이 있으면 그 값을, 없으면 계산된 등급을 사용
       const updated = basicData.map(s => {
@@ -68,6 +73,9 @@ fixedList.forEach(item => {
     const grade    = fixed != null
       ? fixed
      : calcGrade;
+
+     // --- 각 학생별 grade 결정 확인용 로그 ---
+     console.log(`student ${s.studentId}: fixed=${fixed}, calc=${calcGrade}, finalGrade=${grade}`);
 
      return {
        ...s,
