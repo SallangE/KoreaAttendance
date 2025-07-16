@@ -56,7 +56,8 @@ const FinalSummary = ({ classId, semester }) => {
           const finalScore = Number(s.finalScore) || 0;
           const attendanceCalculated = 20;
           const totalScore = attendanceCalculated + midtermScore + finalScore;
-          const grade = fixedMap[s.studentId] || applyGradeWithLimit(totalScore, s.remarks);
+          const grade =
+            fixedMap[s.studentId] || applyGradeWithLimit(totalScore, s.remarks);
 
           return {
             ...s,
@@ -110,7 +111,12 @@ const FinalSummary = ({ classId, semester }) => {
       const calculatedGrade = applyGradeWithLimit(totalScore, s.remarks);
 
       // ✅ fixedScore가 있으면 그걸 우선 적용
-      const grade = fixedMap[s.studentId] || applyGradeWithLimit(totalScore, s.remarks);
+      const grade =
+  fixedScores[s.studentId] !== null &&
+  fixedScores[s.studentId] !== undefined &&
+  fixedScores[s.studentId] !== ""
+    ? fixedScores[s.studentId]
+    : applyGradeWithLimit(totalScore, s.remarks);
 
       return {
         ...s,
@@ -159,9 +165,16 @@ const FinalSummary = ({ classId, semester }) => {
     }
 
     const updated = students.map((s) => {
-      const grade = applyGradeWithLimit(s.totalScore, s.remarks);
-      return { ...s, grade };
-    });
+  const calculatedGrade = applyGradeWithLimit(s.totalScore, s.remarks);
+  const grade =
+    fixedScores[s.studentId] !== null &&
+    fixedScores[s.studentId] !== undefined &&
+    fixedScores[s.studentId] !== ""
+      ? fixedScores[s.studentId]
+      : calculatedGrade;
+
+  return { ...s, grade };
+});
 
     setStudents(updated);
     setShowGradeModal(false);
@@ -569,7 +582,13 @@ const FinalSummary = ({ classId, semester }) => {
                 }}
               >
                 <select
-                  value={fixedScores[s.studentId] !== undefined ? fixedScores[s.studentId] : s.grade}
+                  value={
+                    fixedScores[s.studentId] !== null &&
+                    fixedScores[s.studentId] !== undefined &&
+                    fixedScores[s.studentId] !== ""
+                      ? fixedScores[s.studentId]
+                      : s.grade
+                  }
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
                     try {
