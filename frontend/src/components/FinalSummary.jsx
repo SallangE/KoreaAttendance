@@ -52,15 +52,13 @@ const FinalSummary = ({ classId, semester }) => {
 
         const data = await fetchFinalSummaryBasic(classId);
         const updated = data.map((s) => {
-          const isZeroTarget = fixedZeroList.includes(String(s.studentId));
-          const attendanceCalculated = isZeroTarget ? 0 : 20;
           const midtermScore = Number(s.score) || 0;
           const finalScore = Number(s.finalScore) || 0;
+          const attendanceCalculated = 20;
           const totalScore = attendanceCalculated + midtermScore + finalScore;
           const grade = applyGradeWithLimit(
             totalScore,
             s.remarks,
-            isZeroTarget
           );
 
           return {
@@ -108,16 +106,13 @@ const FinalSummary = ({ classId, semester }) => {
     });
 
     const updated = data.map((s) => {
-      const isZeroTarget = fixedZeroList.includes(String(s.studentId));
-      const attendanceCalculated = isZeroTarget ? 0 : 20;
       const midtermScore = Number(s.score) || 0;
       const finalScore = Number(s.finalScore) || 0;
-      const totalScore = attendanceCalculated + midtermScore + finalScore;
+      const totalScore = 20 + midtermScore + finalScore;
 
       const calculatedGrade = applyGradeWithLimit(
         totalScore,
         s.remarks,
-        isZeroTarget
       );
 
       // ✅ fixedScore가 있으면 그걸 우선 적용
@@ -170,8 +165,7 @@ const FinalSummary = ({ classId, semester }) => {
     }
 
     const updated = students.map((s) => {
-      const isZeroTarget = fixedZeroList.includes(String(s.studentId));
-      const grade = applyGradeWithLimit(s.totalScore, s.remarks, isZeroTarget);
+      const grade = applyGradeWithLimit(s.totalScore, s.remarks);
       return { ...s, grade };
     });
 
@@ -194,9 +188,7 @@ const FinalSummary = ({ classId, semester }) => {
     if (remarks.includes("재수강")) return "A";
     return null;
   };
-  const applyGradeWithLimit = (score, remarks, isZeroTarget) => {
-    // ✅ 고정 출석 0 대상이면 무조건 F
-    if (isZeroTarget) return "F";
+  const applyGradeWithLimit = (score, remarks) => {
 
     const baseGradeInfo = gradeRanges.find(
       (g) => score >= g.min && score <= g.max
@@ -614,8 +606,7 @@ const FinalSummary = ({ classId, semester }) => {
                             stu.finalScore;
                           const calculatedGrade = applyGradeWithLimit(
                             totalScore,
-                            stu.remarks,
-                            false
+                            stu.remarks
                           );
                           const grade =
                             fixedMap[stu.studentId] || calculatedGrade;
