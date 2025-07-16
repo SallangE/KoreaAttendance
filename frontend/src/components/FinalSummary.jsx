@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { PieChart, Pie, Tooltip, Cell } from 'recharts';
-import { fetchFinalSummary, fetchFinalSummaryBasic } from '../api/finalSummaryApi';
+import { fetchFinalSummary, fetchFinalSummaryBasic, fetchFixedScoresApi, updateFixedScoreApi } from '../api/finalSummaryApi';
 import "../styles/FinalSummary.css";
 import * as XLSX from 'xlsx';
 
-const FinalSummary = ({ classId }) => {
+const FinalSummary = ({ classId, semester }) => {
   const [students, setStudents] = useState([]);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [isGradingMode, setIsGradingMode] = useState(false);
@@ -21,6 +21,7 @@ const FinalSummary = ({ classId }) => {
     { grade: 'D', min: 20, max: 29.9999 },
     { grade: 'F', min: 0, max: 19.9999 },
   ]);
+  const [fixedScores, setFixedScores] = useState({}); // { studentId: fixedGrade }
   const fixedZeroList = [
     '2024120090', '2022131034', '2023130579',
     '2016130421', '2023150440'
@@ -37,38 +38,45 @@ const FinalSummary = ({ classId }) => {
 
   // 기본(첫 렌더링 시)에는 "단과대학 ↑, 학과 ↑, 학번 ↑" 순으로 multi-level 정렬
 useEffect(() => {
-  const calculateFixedAttendance = async () => {
-    const data = await fetchFinalSummaryBasic(classId); // 출석 일수 계산 없이 전체 목록 조회
+  const loadFixedScoresAndAttendance = async () => {
+    try {
+      const fixedList = await fetchFixedScoresApi(classId, semester);
+      const fixedMap = {};
+      fixedList.forEach(item => { fixedMap[item.studentId] = item.fixedGrade; });
+      setFixedScores(fixedMap);
 
-    const updated = data.map((s) => {
-      const isZeroTarget = fixedZeroList.includes(String(s.studentId));
-      const attendanceCalculated = isZeroTarget ? 0 : 20;
-      const midtermScore = Number(s.score) || 0;
-      const finalScore = Number(s.finalScore) || 0;
-      const totalScore = attendanceCalculated + midtermScore + finalScore;
-      const grade = applyGradeWithLimit(totalScore, s.remarks, isZeroTarget);
+      const data = await fetchFinalSummaryBasic(classId);
+      const updated = data.map((s) => {
+        const isZeroTarget = fixedZeroList.includes(String(s.studentId));
+        const attendanceCalculated = isZeroTarget ? 0 : 20;
+        const midtermScore = Number(s.score) || 0;
+        const finalScore = Number(s.finalScore) || 0;
+        const totalScore = attendanceCalculated + midtermScore + finalScore;
+        const grade = applyGradeWithLimit(totalScore, s.remarks, isZeroTarget);
 
-      return {
-        ...s,
-        attendanceCalculated, // ✅ 별도 필드로 사용
-        totalScore,
-        grade
-      };
-    });
+        return {
+          ...s,
+          attendanceCalculated,
+          totalScore,
+          grade,
+        };
+      });
 
-    updated.sort((a, b) => {
-      if (a.university !== b.university) return a.university.localeCompare(b.university);
-      if (a.department !== b.department) return a.department.localeCompare(b.department);
-      return a.studentId.localeCompare(b.studentId);
-    });
+      updated.sort((a, b) => {
+        if (a.university !== b.university) return a.university.localeCompare(b.university);
+        if (a.department !== b.department) return a.department.localeCompare(b.department);
+        return a.studentId.localeCompare(b.studentId);
+      });
 
-    setStudents(updated);
-    setSortConfig({ key: null, direction: 'asc' });
+      setStudents(updated);
+      setSortConfig({ key: null, direction: 'asc' });
+    } catch (err) {
+      console.error("데이터 로딩 실패:", err);
+    }
   };
 
-  calculateFixedAttendance();
-}, [classId]);
-
+  loadFixedScoresAndAttendance();
+}, [classId, semester]);  // ✅ semester도 dependency로 넣어야 함!
 
   const handleCalculateAttendance = async () => {
     if (!startDate || !endDate) {
@@ -85,7 +93,7 @@ useEffect(() => {
       startDate: formattedStartDate,
       endDate: formattedEndDate,
       days: mysqlDays.join(','),
-      semester: "2025-1",
+      semester: semester,
     });
 
 const updated = data.map((s) => {
@@ -424,14 +432,86 @@ const applyGradeWithLimit = (score, remarks, isZeroTarget) => {
                 {s.remarks}
               </td>
               {isGradingMode ? (
-                <td>{s.grade ?? '-'}</td>
+                <td
+  style={{
+    backgroundColor: fixedScores[s.studentId] ? '#FFFACD' : 'transparent',
+  }}
+>
+  <select
+    value={fixedScores[s.studentId] ?? s.grade ?? ''}
+    onChange={async (e) => {
+      const selectedGrade = e.target.value;
+      try {
+        await updateFixedScoreApi({
+          studentId: s.studentId,
+          classId,
+          semester,
+          fixedGrade: selectedGrade || null, // 빈값이면 삭제
+        });
+        setFixedScores((prev) => {
+          const updated = { ...prev };
+          if (!selectedGrade) {
+            delete updated[s.studentId]; // 빈값이면 고정값 해제
+          } else {
+            updated[s.studentId] = selectedGrade;
+          }
+          return updated;
+        });
+      } catch (err) {
+        alert('고정 학점 업데이트 실패');
+      }
+    }}
+  >
+    <option value="">(계산값 사용)</option>
+    {gradeOrder.map((grade) => (
+      <option key={grade} value={grade}>{grade}</option>
+    ))}
+  </select>
+</td>
+
               ) : (
                 <>
                   <td>{s.attendanceCalculated ?? '-'}</td>
                   <td>{s.score ?? 0}</td>
                   <td>{s.finalScore ?? 0}</td>
                   <td>{s.totalScore ?? '-'}</td>
-                  <td>{s.grade ?? '-'}</td>
+                  <td
+  style={{
+    backgroundColor: fixedScores[s.studentId] ? '#FFFACD' : 'transparent',
+  }}
+>
+  <select
+    value={fixedScores[s.studentId] ?? s.grade ?? ''}
+    onChange={async (e) => {
+      const selectedGrade = e.target.value;
+      try {
+        await updateFixedScoreApi({
+          studentId: s.studentId,
+          classId,
+          semester,
+          fixedGrade: selectedGrade || null, // 빈값이면 삭제
+        });
+        setFixedScores((prev) => {
+          const updated = { ...prev };
+          if (!selectedGrade) {
+            delete updated[s.studentId]; // 빈값이면 고정값 해제
+          } else {
+            updated[s.studentId] = selectedGrade;
+          }
+          return updated;
+        });
+      } catch (err) {
+        alert('고정 학점 업데이트 실패');
+      }
+    }}
+  >
+    <option value="">(계산값 사용)</option>
+    {gradeOrder.map((grade) => (
+      <option key={grade} value={grade}>{grade}</option>
+    ))}
+  </select>
+</td>
+
                 </>
               )}
             </tr>
