@@ -27,13 +27,6 @@ const FinalSummary = ({ classId, semester }) => {
     { grade: "F", min: 0, max: 19.9999 },
   ]);
   const [fixedScores, setFixedScores] = useState({}); // { studentId: fixedGrade }
-  const fixedZeroList = [
-    "2024120090",
-    "2022131034",
-    "2023130579",
-    "2016130421",
-    "2023150440",
-  ];
 
   // sortConfig.key = column field, sortConfig.direction = 'asc' or 'desc'
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -115,14 +108,27 @@ const FinalSummary = ({ classId, semester }) => {
     });
 
     const updated = data.map((s) => {
-      const isZeroTarget = fixedZeroList.includes(s.studentId);
+      const isZeroTarget = fixedZeroList.includes(String(s.studentId));
       const attendanceCalculated = isZeroTarget ? 0 : 20;
-      const midtermScore = s.score ?? 0;
-      const finalScore = s.finalScore ?? 0;
+      const midtermScore = Number(s.score) || 0;
+      const finalScore = Number(s.finalScore) || 0;
       const totalScore = attendanceCalculated + midtermScore + finalScore;
-      const grade = applyGradeWithLimit(totalScore, s.remarks, isZeroTarget);
 
-      return { ...s, attendanceCalculated, totalScore, grade };
+      const calculatedGrade = applyGradeWithLimit(
+        totalScore,
+        s.remarks,
+        isZeroTarget
+      );
+
+      // ✅ fixedScore가 있으면 그걸 우선 적용
+      const grade = fixedMap[s.studentId] || calculatedGrade;
+
+      return {
+        ...s,
+        attendanceCalculated,
+        totalScore,
+        grade,
+      };
     });
 
     // 출석 계산 후에도 기본 정렬 적용하려면:
@@ -598,6 +604,24 @@ const FinalSummary = ({ classId, semester }) => {
                         fixedMap[item.studentId] = item.fixedGrade;
                       });
                       setFixedScores(fixedMap);
+
+                      // students.grade도 강제로 fixedMap 기반으로 덮어쓰기
+                      setStudents((prev) =>
+                        prev.map((stu) => {
+                          const totalScore =
+                            stu.attendanceCalculated +
+                            stu.score +
+                            stu.finalScore;
+                          const calculatedGrade = applyGradeWithLimit(
+                            totalScore,
+                            stu.remarks,
+                            false
+                          );
+                          const grade =
+                            fixedMap[stu.studentId] || calculatedGrade;
+                          return { ...stu, grade };
+                        })
+                      );
                     } catch (err) {
                       alert("고정 학점 업데이트 실패");
                     }
