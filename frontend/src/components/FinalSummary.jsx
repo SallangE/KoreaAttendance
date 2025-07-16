@@ -58,9 +58,7 @@ const FinalSummary = ({ classId, semester }) => {
           const totalScore = attendanceCalculated + midtermScore + finalScore;
           const calculatedGrade = applyGradeWithLimit(totalScore, s.remarks);
           const grade =
-            fixedMap[s.studentId] !== null &&
-            fixedMap[s.studentId] !== undefined &&
-            fixedMap[s.studentId] !== ""
+            fixedMap[s.studentId] !== null && fixedMap[s.studentId] !== ""
               ? fixedMap[s.studentId]
               : calculatedGrade;
 
@@ -589,7 +587,7 @@ const FinalSummary = ({ classId, semester }) => {
                 }}
               >
                 <select
-                  value={s.grade}
+                  value={fixedScores[s.studentId] ?? s.grade ?? ""}
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
                     try {
@@ -597,17 +595,16 @@ const FinalSummary = ({ classId, semester }) => {
                         studentId: s.studentId,
                         classId,
                         semester,
-                        fixedGrade: selectedGrade || null, // 빈값이면 삭제
+                        fixedGrade: selectedGrade === "" ? null : selectedGrade,
                       });
 
-                      // ✅ 1️⃣ 프론트 local fixedScores 먼저 업데이트
                       const newFixedScores = {
                         ...fixedScores,
-                        [s.studentId]: selectedGrade || null,
+                        [s.studentId]:
+                          selectedGrade === "" ? null : selectedGrade,
                       };
                       setFixedScores(newFixedScores);
 
-                      // ✅ 2️⃣ students grade도 newFixedScores 기준으로 재계산
                       setStudents((prev) =>
                         prev.map((stu) => {
                           const totalScore =
@@ -619,18 +616,10 @@ const FinalSummary = ({ classId, semester }) => {
                             stu.remarks
                           );
                           const grade =
-                            newFixedScores[stu.studentId] !== null &&
-                            newFixedScores[stu.studentId] !== undefined &&
-                            newFixedScores[stu.studentId] !== ""
-                              ? newFixedScores[stu.studentId]
-                              : calculatedGrade;
+                            newFixedScores[stu.studentId] ?? calculatedGrade;
                           return { ...stu, grade };
                         })
                       );
-
-                      // ✅ 3️⃣ (선택) 서버에서 fresh data 다시 가져오려면 여기에 추가 fetch
-                      // const fixedList = await fetchFixedScoresApi(classId, semester);
-                      // ...setFixedScores(freshMap)...
                     } catch (err) {
                       alert("고정 학점 업데이트 실패");
                     }
