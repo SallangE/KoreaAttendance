@@ -50,27 +50,32 @@ const FinalSummary = ({ classId, semester }) => {
       ]);
 
       // 2) fixedList를 studentId→fixedGrade 맵으로 변환
-      const fixedMap = fixedList.reduce((m, { studentId, fixedGrade }) => {
-        m[studentId] = fixedGrade; 
-        return m;
-      }, {});
+         const fixedMap = {};
+fixedList.forEach(item => {
+ // make absolutely sure we're using the string form of the ID
+ fixedMap[String(item.studentId)] = item.fixedGrade ?? null;
+});
 
       // 3) 각 학생마다 totalScore 계산 후, fixedMap에 값이 있으면 그 값을, 없으면 계산된 등급을 사용
-      const updated = basicData.map((s) => {
-        const mid = Number(s.score) || 0;
-        const fin = Number(s.finalScore) || 0;
-        const att = 20;
-        const total = att + mid + fin;
-        const calcGrade = applyGradeWithLimit(total, s.remarks);
-        const fixed = fixedMap[s.studentId]; 
-        return {
-          ...s,
-          attendanceCalculated: att,
-          totalScore: total,
-          grade: fixed != null ? fixed : calcGrade,
-        };
-      });
+      const updated = basicData.map(s => {
+     const midtermScore = Number(s.score) || 0;
+     const finalScore   = Number(s.finalScore) || 0;
+     const attendance   = 20;
+     const totalScore   = attendance + midtermScore + finalScore;
+     const calcGrade    = applyGradeWithLimit(totalScore, s.remarks);
+    // look up by the same string key
+   const fixed    = fixedMap[String(s.studentId)];
+    const grade    = fixed != null
+      ? fixed
+     : calcGrade;
 
+     return {
+       ...s,
+       attendanceCalculated: attendance,
+       totalScore,
+       grade,
+     };
+   });
       // 4) 다단계 기본 정렬
       updated.sort((a, b) => {
         if (a.university !== b.university) return a.university.localeCompare(b.university);
