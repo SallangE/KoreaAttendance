@@ -587,7 +587,13 @@ const FinalSummary = ({ classId, semester }) => {
                 }}
               >
                 <select
-                  value={fixedScores[s.studentId] ?? s.grade ?? ""}
+                  value={
+                    fixedScores[s.studentId] !== null &&
+                    fixedScores[s.studentId] !== undefined &&
+                    fixedScores[s.studentId] !== ""
+                      ? fixedScores[s.studentId]
+                      : s.grade
+                  }
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
                     try {
@@ -616,7 +622,11 @@ const FinalSummary = ({ classId, semester }) => {
                             stu.remarks
                           );
                           const grade =
-                            newFixedScores[stu.studentId] ?? calculatedGrade;
+                            newFixedScores[stu.studentId] !== null &&
+                            newFixedScores[stu.studentId] !== undefined &&
+                            newFixedScores[stu.studentId] !== ""
+                              ? newFixedScores[stu.studentId]
+                              : calculatedGrade;
                           return { ...stu, grade };
                         })
                       );
