@@ -56,8 +56,13 @@ const FinalSummary = ({ classId, semester }) => {
           const finalScore = Number(s.finalScore) || 0;
           const attendanceCalculated = 20;
           const totalScore = attendanceCalculated + midtermScore + finalScore;
+          const calculatedGrade = applyGradeWithLimit(totalScore, s.remarks);
           const grade =
-            fixedMap[s.studentId] || applyGradeWithLimit(totalScore, s.remarks);
+            fixedMap[s.studentId] !== null &&
+            fixedMap[s.studentId] !== undefined &&
+            fixedMap[s.studentId] !== ""
+              ? fixedMap[s.studentId]
+              : calculatedGrade;
 
           return {
             ...s,
