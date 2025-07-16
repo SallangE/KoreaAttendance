@@ -41,54 +41,59 @@ const FinalSummary = ({ classId, semester }) => {
 
   // 기본(첫 렌더링 시)에는 "단과대학 ↑, 학과 ↑, 학번 ↑" 순으로 multi-level 정렬
   useEffect(() => {
-    const loadFixedScoresAndAttendance = async () => {
-      try {
-        const fixedList = await fetchFixedScoresApi(classId, semester);
-        const fixedMap = {};
-        fixedList.forEach((item) => {
-          fixedMap[item.studentId] = item.fixedGrade || null;
-        });
+  const loadData = async () => {
+    const [basicData, fixedList] = await Promise.all([
+      fetchFinalSummaryBasic(classId),
+      fetchFixedScoresApi(classId, semester),
+    ]);
 
-        // students에 fixedMap 기반 grade 적용
-        const data = await fetchFinalSummaryBasic(classId);
-        const updated = data.map((s) => {
-          const midtermScore = Number(s.score) || 0;
-          const finalScore = Number(s.finalScore) || 0;
-          const attendanceCalculated = 20;
-          const totalScore = attendanceCalculated + midtermScore + finalScore;
-          const calculatedGrade = applyGradeWithLimit(totalScore, s.remarks);
-          const grade =
-            fixedMap[s.studentId] !== null && fixedMap[s.studentId] !== ""
-              ? fixedMap[s.studentId]
-              : calculatedGrade;
+    // 1) rawMap에 API에서 받아온 고정 성적만 모아서 저장
+    const rawMap = {};
+    fixedList.forEach(({ studentId, fixedGrade }) => {
+      rawMap[studentId] = fixedGrade; // null 또는 문자열
+    });
 
-          return {
-            ...s,
-            attendanceCalculated,
-            totalScore,
-            grade,
-          };
-        });
+    // 2) 모든 학생에 대해 completeFixed 맵 생성 (없으면 null)
+    const completeFixed = {};
+    basicData.forEach((s) => {
+      completeFixed[s.studentId] = rawMap[s.studentId] != null
+        ? rawMap[s.studentId]
+        : null;
+    });
 
-        setFixedScores(fixedMap); // select 박스에서 현재 선택된 값으로만 사용
+    // 3) 최종 성적 계산 & fixed 적용
+    const updated = basicData.map((s) => {
+      const mid = Number(s.score) || 0;
+      const fin = Number(s.finalScore) || 0;
+      const att = 20;
+      const total = att + mid + fin;
+      const calcGrade = applyGradeWithLimit(total, s.remarks);
+      const fixed = completeFixed[s.studentId];
+      const grade = fixed != null ? fixed : calcGrade;
 
-        updated.sort((a, b) => {
-          if (a.university !== b.university)
-            return a.university.localeCompare(b.university);
-          if (a.department !== b.department)
-            return a.department.localeCompare(b.department);
-          return a.studentId.localeCompare(b.studentId);
-        });
+      return {
+        ...s,
+        attendanceCalculated: att,
+        totalScore: total,
+        grade,
+      };
+    });
 
-        setStudents(updated);
-        setSortConfig({ key: null, direction: "asc" });
-      } catch (err) {
-        console.error("데이터 로딩 실패:", err);
-      }
-    };
+    // 4) 기본 정렬
+    updated.sort((a, b) => {
+      if (a.university !== b.university) return a.university.localeCompare(b.university);
+      if (a.department !== b.department) return a.department.localeCompare(b.department);
+      return a.studentId.localeCompare(b.studentId);
+    });
 
-    loadFixedScoresAndAttendance();
-  }, [classId, semester]); // ✅ semester도 dependency로 넣어야 함!
+    setFixedScores(completeFixed);
+    setStudents(updated);
+    setSortConfig({ key: null, direction: "asc" });
+  };
+
+  loadData();
+}, [classId, semester]);
+
 
   const handleCalculateAttendance = async () => {
     if (!startDate || !endDate) {
