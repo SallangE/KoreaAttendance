@@ -8,7 +8,16 @@ import java.util.List;
 @Mapper
 public interface FixedScoreMapper {
 
-    @Select("SELECT id, student_id, class_id, semester, fixed_grade FROM FixedScore WHERE class_id = #{classId} AND semester = #{semester}")
+    @Select("SELECT id, student_id, class_id, semester, fixed_grade " +
+            "FROM FixedScore " +
+            "WHERE class_id = #{classId} AND semester = #{semester}")
+    @Results({
+        @Result(property = "id", column = "id"),
+        @Result(property = "studentId", column = "student_id"),
+        @Result(property = "classId", column = "class_id"),
+        @Result(property = "semester", column = "semester"),
+        @Result(property = "fixedGrade", column = "fixed_grade")
+    })
     List<FixedScore> findByClassIdAndSemester(@Param("classId") int classId, @Param("semester") String semester);
 
     @Insert("INSERT INTO FixedScore (student_id, class_id, semester, fixed_grade) " +
