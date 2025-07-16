@@ -56,10 +56,7 @@ const FinalSummary = ({ classId, semester }) => {
           const finalScore = Number(s.finalScore) || 0;
           const attendanceCalculated = 20;
           const totalScore = attendanceCalculated + midtermScore + finalScore;
-          const grade = applyGradeWithLimit(
-            totalScore,
-            s.remarks,
-          );
+          const grade = fixedMap[s.studentId] || applyGradeWithLimit(totalScore, s.remarks);
 
           return {
             ...s,
@@ -110,13 +107,10 @@ const FinalSummary = ({ classId, semester }) => {
       const finalScore = Number(s.finalScore) || 0;
       const totalScore = 20 + midtermScore + finalScore;
 
-      const calculatedGrade = applyGradeWithLimit(
-        totalScore,
-        s.remarks,
-      );
+      const calculatedGrade = applyGradeWithLimit(totalScore, s.remarks);
 
       // ✅ fixedScore가 있으면 그걸 우선 적용
-      const grade = fixedMap[s.studentId] || calculatedGrade;
+      const grade = fixedMap[s.studentId] || applyGradeWithLimit(totalScore, s.remarks);
 
       return {
         ...s,
@@ -189,7 +183,6 @@ const FinalSummary = ({ classId, semester }) => {
     return null;
   };
   const applyGradeWithLimit = (score, remarks) => {
-
     const baseGradeInfo = gradeRanges.find(
       (g) => score >= g.min && score <= g.max
     ) || { grade: "F" };
@@ -576,7 +569,7 @@ const FinalSummary = ({ classId, semester }) => {
                 }}
               >
                 <select
-                  value={fixedScores[s.studentId] ?? s.grade ?? ""}
+                  value={fixedScores[s.studentId] !== undefined ? fixedScores[s.studentId] : s.grade}
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
                     try {
