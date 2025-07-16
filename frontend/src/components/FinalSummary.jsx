@@ -46,10 +46,10 @@ const FinalSummary = ({ classId, semester }) => {
         const fixedList = await fetchFixedScoresApi(classId, semester);
         const fixedMap = {};
         fixedList.forEach((item) => {
-          fixedMap[item.studentId] = item.fixedGrade;
+          fixedMap[item.studentId] = item.fixedGrade || null;
         });
-        setFixedScores(fixedMap);
 
+        // students에 fixedMap 기반 grade 적용
         const data = await fetchFinalSummaryBasic(classId);
         const updated = data.map((s) => {
           const midtermScore = Number(s.score) || 0;
@@ -71,6 +71,8 @@ const FinalSummary = ({ classId, semester }) => {
             grade,
           };
         });
+
+        setFixedScores(fixedMap); // select 박스에서 현재 선택된 값으로만 사용
 
         updated.sort((a, b) => {
           if (a.university !== b.university)
@@ -587,13 +589,7 @@ const FinalSummary = ({ classId, semester }) => {
                 }}
               >
                 <select
-                  value={
-                    fixedScores[s.studentId] !== null &&
-                    fixedScores[s.studentId] !== undefined &&
-                    fixedScores[s.studentId] !== ""
-                      ? fixedScores[s.studentId]
-                      : s.grade
-                  }
+                  value={s.grade}
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
                     try {
