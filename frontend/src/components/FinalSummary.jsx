@@ -597,17 +597,21 @@ const FinalSummary = ({ classId, semester }) => {
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
                     try {
+                      const fixedGradeToSend =
+                        selectedGrade === "(계산값 사용)"
+                          ? null
+                          : selectedGrade;
+
                       await updateFixedScoreApi({
                         studentId: s.studentId,
                         classId,
                         semester,
-                        fixedGrade: selectedGrade === "" ? null : selectedGrade,
+                        fixedGrade: fixedGradeToSend,
                       });
 
                       const newFixedScores = {
                         ...fixedScores,
-                        [s.studentId]:
-                          selectedGrade === "" ? null : selectedGrade,
+                        [s.studentId]: fixedGradeToSend,
                       };
                       setFixedScores(newFixedScores);
 
@@ -635,7 +639,7 @@ const FinalSummary = ({ classId, semester }) => {
                     }
                   }}
                 >
-                  <option value="">(계산값 사용)</option>
+                  <option value="(계산값 사용)">(계산값 사용)</option>
                   {gradeOrder.map((grade) => (
                     <option key={grade} value={grade}>
                       {grade}
