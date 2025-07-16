@@ -582,65 +582,58 @@ const FinalSummary = ({ classId, semester }) => {
               <td
                 style={{
                   backgroundColor:
-                    fixedScores[s.studentId] !== null &&
-                    fixedScores[s.studentId] !== undefined
+                    fixedScores[s.studentId] != null
                       ? "#FFFACD"
                       : "transparent",
                 }}
               >
                 <select
                   value={
-                    fixedScores[s.studentId] !== null &&
-                    fixedScores[s.studentId] !== undefined
+                    fixedScores[s.studentId] != null
                       ? fixedScores[s.studentId]
-                      : ""
+                      : s.grade
                   }
                   onChange={async (e) => {
                     const selectedGrade = e.target.value;
+                    const fixedGradeToSend =
+                      selectedGrade === "" ? null : selectedGrade;
                     try {
-                      const fixedGradeToSend =
-                        selectedGrade === "" ? null : selectedGrade;
-
                       await updateFixedScoreApi({
                         studentId: s.studentId,
                         classId,
                         semester,
                         fixedGrade: fixedGradeToSend,
                       });
-
-                      const newFixedScores = {
+                      const newFixed = {
                         ...fixedScores,
                         [s.studentId]: fixedGradeToSend,
                       };
-                      setFixedScores(newFixedScores);
-
+                      setFixedScores(newFixed);
                       setStudents((prev) =>
                         prev.map((stu) => {
-                          const totalScore =
+                          const total =
                             stu.attendanceCalculated +
                             stu.score +
                             stu.finalScore;
-                          const calculatedGrade = applyGradeWithLimit(
-                            totalScore,
-                            stu.remarks
-                          );
-                          const grade =
-                            newFixedScores[stu.studentId] !== null &&
-                            newFixedScores[stu.studentId] !== undefined
-                              ? newFixedScores[stu.studentId]
-                              : calculatedGrade;
-                          return { ...stu, grade };
+                          const calc = applyGradeWithLimit(total, stu.remarks);
+                          return {
+                            ...stu,
+                            grade:
+                              newFixed[stu.studentId] != null
+                                ? newFixed[stu.studentId]
+                                : calc,
+                          };
                         })
                       );
-                    } catch (err) {
+                    } catch {
                       alert("고정 학점 업데이트 실패");
                     }
                   }}
                 >
                   <option value="">(계산값 사용)</option>
-                  {gradeOrder.map((grade) => (
-                    <option key={grade} value={grade}>
-                      {grade}
+                  {gradeOrder.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
                     </option>
                   ))}
                 </select>
