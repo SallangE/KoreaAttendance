@@ -112,11 +112,11 @@ const FinalSummary = ({ classId, semester }) => {
 
       // ✅ fixedScore가 있으면 그걸 우선 적용
       const grade =
-  fixedScores[s.studentId] !== null &&
-  fixedScores[s.studentId] !== undefined &&
-  fixedScores[s.studentId] !== ""
-    ? fixedScores[s.studentId]
-    : applyGradeWithLimit(totalScore, s.remarks);
+        fixedScores[s.studentId] !== null &&
+        fixedScores[s.studentId] !== undefined &&
+        fixedScores[s.studentId] !== ""
+          ? fixedScores[s.studentId]
+          : applyGradeWithLimit(totalScore, s.remarks);
 
       return {
         ...s,
@@ -165,16 +165,16 @@ const FinalSummary = ({ classId, semester }) => {
     }
 
     const updated = students.map((s) => {
-  const calculatedGrade = applyGradeWithLimit(s.totalScore, s.remarks);
-  const grade =
-    fixedScores[s.studentId] !== null &&
-    fixedScores[s.studentId] !== undefined &&
-    fixedScores[s.studentId] !== ""
-      ? fixedScores[s.studentId]
-      : calculatedGrade;
+      const calculatedGrade = applyGradeWithLimit(s.totalScore, s.remarks);
+      const grade =
+        fixedScores[s.studentId] !== null &&
+        fixedScores[s.studentId] !== undefined &&
+        fixedScores[s.studentId] !== ""
+          ? fixedScores[s.studentId]
+          : calculatedGrade;
 
-  return { ...s, grade };
-});
+      return { ...s, grade };
+    });
 
     setStudents(updated);
     setShowGradeModal(false);
@@ -599,17 +599,14 @@ const FinalSummary = ({ classId, semester }) => {
                         fixedGrade: selectedGrade || null, // 빈값이면 삭제
                       });
 
-                      const fixedList = await fetchFixedScoresApi(
-                        classId,
-                        semester
-                      );
-                      const fixedMap = {};
-                      fixedList.forEach((item) => {
-                        fixedMap[item.studentId] = item.fixedGrade;
-                      });
-                      setFixedScores(fixedMap);
+                      // ✅ 1️⃣ 프론트 local fixedScores 먼저 업데이트
+                      const newFixedScores = {
+                        ...fixedScores,
+                        [s.studentId]: selectedGrade || null,
+                      };
+                      setFixedScores(newFixedScores);
 
-                      // students.grade도 강제로 fixedMap 기반으로 덮어쓰기
+                      // ✅ 2️⃣ students grade도 newFixedScores 기준으로 재계산
                       setStudents((prev) =>
                         prev.map((stu) => {
                           const totalScore =
@@ -621,10 +618,18 @@ const FinalSummary = ({ classId, semester }) => {
                             stu.remarks
                           );
                           const grade =
-                            fixedMap[stu.studentId] || calculatedGrade;
+                            newFixedScores[stu.studentId] !== null &&
+                            newFixedScores[stu.studentId] !== undefined &&
+                            newFixedScores[stu.studentId] !== ""
+                              ? newFixedScores[stu.studentId]
+                              : calculatedGrade;
                           return { ...stu, grade };
                         })
                       );
+
+                      // ✅ 3️⃣ (선택) 서버에서 fresh data 다시 가져오려면 여기에 추가 fetch
+                      // const fixedList = await fetchFixedScoresApi(classId, semester);
+                      // ...setFixedScores(freshMap)...
                     } catch (err) {
                       alert("고정 학점 업데이트 실패");
                     }
